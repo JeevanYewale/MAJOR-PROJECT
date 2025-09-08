@@ -1,0 +1,93 @@
+<% showNavbar = true %>
+<% stickyFooter = true %>
+<% layout("layouts/boilerplate") %>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="error-container text-center">
+        <!-- Error Icon -->
+        <div class="error-icon mb-4">
+          <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 4rem;"></i>
+        </div>
+        
+        <!-- Error Details -->
+        <div class="alert alert-danger shadow-sm border-0" role="alert">
+          <h2 class="alert-heading mb-3">
+            <strong>Error <%= err.statusCode %></strong>
+          </h2>
+          <p class="mb-4 fs-5"><%= err.message %></p>
+          <hr class="my-4">
+          
+          <!-- Action Buttons -->
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="/listings" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-home me-2"></i>Go to Listings
+            </a>
+            <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
+              <i class="fa-solid fa-arrow-left me-2"></i>Go Back
+            </button>
+          </div>
+        </div>
+        
+        <!-- Additional Help Text -->
+        <div class="mt-4">
+          <p class="text-muted">
+            <small>
+              If this error persists, please contact support or try refreshing the page.
+            </small>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .error-container {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .error-icon {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .alert {
+    border-radius: 15px;
+    padding: 2rem;
+  }
+  
+  .btn {
+    border-radius: 25px;
+    padding: 0.7rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  @media (max-width: 576px) {
+    .d-flex.gap-3 {
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    .error-icon i {
+      font-size: 3rem !important;
+    }
+  }
+</style>

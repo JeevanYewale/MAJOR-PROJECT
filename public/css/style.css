@@ -1,0 +1,710 @@
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* Global styles */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f8f9fa;
+  color: #222222;
+  margin: 0;
+  height: 100%;
+}
+
+/* Navbar */
+.navbar {
+  height: 5rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #222222 !important;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.fa-compass {
+  color: #fe424d;
+  font-size: 2rem;
+}
+
+.nav-link {
+  color: #222222 !important;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin: 0 0.6rem;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #fe424d !important;
+  font-weight: 600;
+}
+
+/* Card Styles */
+.card {
+  border: none !important;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+  border-radius: 1rem !important;
+  width: 100% !important;
+  height: 230px;
+  object-fit: cover !important;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.07);
+}
+
+.card-body {
+  padding: 0.75rem !important;
+}
+
+.card-text p {
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+h6 {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+.text-muted {
+  font-size: 0.85rem;
+}
+
+.price {
+  font-weight: 600;
+  color: #222;
+}
+
+.price span {
+  font-weight: 400;
+  color: #777;
+}
+
+/* Sticky Footer Layout */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main.flex-grow-1 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+main.flex-grow-1 > .container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Footer styling */
+footer {
+  background-color: #f8f9fa;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.new-main-title {
+  font-weight: 700; 
+  font-size: 1.5rem; 
+  margin: 0;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent;
+}
+
+/* Listing Cards */
+.listing-card { 
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem; 
+  cursor: pointer; 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.listing-card:hover { 
+  transform: translateY(-6px); 
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15); 
+}
+
+.image-container {
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+}
+
+.listing-image { 
+  width: 100%; 
+  height: 230px; 
+  object-fit: cover; 
+  transition: transform 0.4s ease, filter 0.4s ease; 
+  display: block;
+}
+
+.listing-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0);
+  transition: background 0.4s ease;
+  border-radius: 1.5rem;
+  pointer-events: none;
+}
+
+.listing-card:hover .listing-image { 
+  transform: scale(1.07); 
+  filter: blur(2px); 
+}
+
+.listing-card:hover::after {
+  background: rgba(0,0,0,0.15);
+}
+
+/* ===== ENHANCED LISTING PAGE STYLES ===== */
+
+/* Listing Header */
+.listing-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #222222;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.rating-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.location-info {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid #ddd;
+}
+
+.btn-outline-heart {
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  background: white;
+}
+
+.btn-outline-heart:hover,
+.btn-outline-heart.favorited {
+  border-color: #fe424d;
+  color: #fe424d;
+  background: #fff5f5;
+  transform: scale(1.05);
+}
+
+.btn-outline-secondary {
+  border-color: #ddd;
+  color: #666;
+  background: white;
+}
+
+.btn-outline-secondary:hover {
+  background: #f8f9fa;
+  border-color: #bbb;
+}
+
+/* Main Image */
+.main-image {
+  border-radius: 1.5rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease;
+}
+
+.main-image:hover {
+  transform: scale(1.02);
+}
+
+/* Price Display */
+.price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #222222;
+  margin: 0;
+}
+
+.price .text-muted {
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+/* Description */
+.listing-details h4 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.listing-details p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Amenities Section */
+.amenities-section h4 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.amenity-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.amenity-item:hover {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding-left: 0.5rem;
+  margin: 0 -0.5rem;
+}
+
+.amenity-item:last-child {
+  border-bottom: none;
+}
+
+.amenity-item i {
+  width: 24px;
+  font-size: 1.1rem;
+}
+
+#toggle-amenities {
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#toggle-amenities:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Booking Card */
+.booking-card {
+  border: 1px solid #ddd;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  background: white;
+  transition: box-shadow 0.3s ease;
+}
+
+.booking-card:hover {
+  box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+}
+
+.booking-card .card-body {
+  padding: 2rem !important;
+}
+
+.booking-form .form-control {
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.booking-form .form-control:focus {
+  border-color: #fe424d;
+  box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.1);
+}
+
+.booking-form .btn-primary {
+  background: linear-gradient(135deg, #fe424d 0%, #ff6b6b 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.booking-form .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(254, 66, 77, 0.3);
+}
+
+/* Host Card */
+.host-card {
+  border: 1px solid #ddd;
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  background: white;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.host-card:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.host-card .card-body {
+  padding: 2rem !important;
+}
+
+.host-card img {
+  border: 3px solid #f8f9fa;
+  transition: transform 0.2s ease;
+}
+
+.host-card img:hover {
+  transform: scale(1.05);
+}
+
+.host-card .btn {
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.host-card .btn-outline-primary {
+  border-color: #fe424d;
+  color: #fe424d;
+}
+
+.host-card .btn-outline-primary:hover {
+  background: #fe424d;
+  border-color: #fe424d;
+  transform: translateY(-1px);
+}
+
+/* Reviews Section */
+.reviews-section h3 {
+  font-weight: 700;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-controls .form-select {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.review-item {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.review-item:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  border-color: #e0e0e0;
+}
+
+.review-item h6 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.rating {
+  margin-bottom: 0.75rem;
+}
+
+.review-text {
+  line-height: 1.6;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.delete-review-btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+}
+
+/* Add Review Card */
+.add-review-card {
+  border: 1px solid #ddd;
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  background: white;
+  overflow: hidden;
+}
+
+.add-review-card .card-body {
+  padding: 2rem !important;
+}
+
+.add-review-card .form-control {
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.add-review-card .form-control:focus {
+  border-color: #fe424d;
+  box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.1);
+}
+
+/* Star Rating */
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.star-rating input {
+  display: none;
+}
+
+.star-rating .star-label {
+  font-size: 2.5rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.star-rating .star-label:hover {
+  color: #ffc107;
+  transform: scale(1.1);
+}
+
+.star-rating input:checked ~ .star-label,
+.star-rating .star-label:hover,
+.star-rating .star-label:hover ~ .star-label {
+  color: #ffc107;
+}
+
+/* Character Counter */
+.form-text {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: right;
+}
+
+/* No Reviews State */
+.no-reviews {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.no-reviews i {
+  opacity: 0.6;
+}
+
+/* Modal Enhancements */
+.modal-content {
+  border-radius: 1rem;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 1.5rem;
+}
+
+.modal-review-item {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: none;
+}
+
+/* Loading States */
+.placeholder {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Map Container */
+.map-container {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.map-placeholder {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .listing-title {
+    font-size: 1.75rem;
+  }
+  
+  .action-buttons {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  
+  .booking-card {
+    position: static !important;
+    margin-top: 2rem;
+  }
+  
+  .star-rating .star-label {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .listing-title {
+    font-size: 1.5rem;
+  }
+  
+  .price {
+    font-size: 2rem;
+  }
+  
+  .amenity-item {
+    padding: 0.5rem 0;
+  }
+  
+  .review-item,
+  .add-review-card .card-body,
+  .booking-card .card-body,
+  .host-card .card-body {
+    padding: 1.25rem !important;
+  }
+  
+  .star-rating {
+    gap: 0.25rem;
+  }
+  
+  .star-rating .star-label {
+    font-size: 1.75rem;
+  }
+}
+
+/* Accessibility Improvements */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .text-muted {
+    color: #495057 !important;
+  }
+  
+  .border-bottom {
+    border-bottom-color: #495057 !important;
+  }
+  
+  .card {
+    border: 2px solid #333 !important;
+  }
+}
+
+/* Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus States */
+.btn:focus,
+.form-control:focus,
+.star-label:focus {
+  outline: 2px solid #fe424d;
+  outline-offset: 2px;
+}

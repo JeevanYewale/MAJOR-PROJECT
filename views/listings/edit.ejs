@@ -1,0 +1,351 @@
+<% showNavbar = true %>
+<% stickyFooter = true %>
+<% layout("layouts/boilerplate") %>
+
+<%
+const availableAmenities = [
+  { id: "beach-access", icon: "fas fa-water", label: "Beach access" },
+  { id: "wifi", icon: "fas fa-wifi", label: "Fast wifi" },
+  { id: "parking", icon: "fas fa-car", label: "Free parking" },
+  { id: "washer", icon: "fas fa-soap", label: "Washer" },
+  { id: "kitchen", icon: "fas fa-utensils", label: "Kitchen" },
+  { id: "workspace", icon: "fas fa-briefcase", label: "Dedicated workspace" },
+  { id: "tv", icon: "fas fa-tv", label: "TV" },
+  { id: "ac", icon: "fas fa-snowflake", label: "Air conditioning" },
+  { id: "pool", icon: "fas fa-swimming-pool", label: "Pool" },
+  { id: "gym", icon: "fas fa-dumbbell", label: "Gym access" },
+  { id: "pet-friendly", icon: "fas fa-paw", label: "Pet friendly" },
+  { id: "fireplace", icon: "fas fa-fire", label: "Fireplace" },
+  { id: "balcony", icon: "fas fa-home", label: "Balcony/Patio" },
+  { id: "garden", icon: "fas fa-leaf", label: "Garden" },
+  { id: "heating", icon: "fas fa-thermometer-half", label: "Heating" },
+  { id: "dryer", icon: "fas fa-tshirt", label: "Dryer" }
+];
+
+const imgUrl = (listing.image && listing.image.url)
+  ? listing.image.url
+  : (typeof listing.image === 'string' && listing.image.trim() !== ''
+      ? listing.image
+      : '/images/default.jpg');
+%>
+
+<div class="container edit-page-wrapper my-0">
+  <header class="edit-header mb-3">
+    <div class="d-flex align-items-center justify-content-between gap-3 flex-column flex-sm-row">
+      <div>
+        <h1 class="edit-main-title mb-1">
+          <i class="fa-solid fa-pen-to-square me-2"></i> Edit Listing
+        </h1>
+        <div class="edit-subtitle">Update details &amp; image for <strong><%= listing.title %></strong></div>
+      </div>
+      <div class="header-actions d-flex gap-2">
+        <a href="/listings/<%= listing._id %>" class="btn btn-outline-secondary btn-sm">View</a>
+        <a href="/listings" class="btn btn-outline-primary btn-sm">Back</a>
+      </div>
+    </div>
+  </header>
+
+  <form id="editForm" method="POST" action="/listings/<%= listing._id %>?_method=PUT"
+        enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light needs-validation" novalidate>
+    <div class="mb-3">
+      <label for="title" class="form-label">Property Title *</label>
+      <input id="title" name="listing[title]" value="<%= listing.title %>" type="text" class="form-control" required minlength="3" maxlength="100" />
+      <div class="invalid-feedback">Please enter a title (3-100 characters).</div>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description *</label>
+      <textarea id="description" name="listing[description]" class="form-control" rows="4" required minlength="10" maxlength="2000"><%= listing.description %></textarea>
+      <div class="invalid-feedback">Please provide a description (10-2000 characters).</div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="imageFile" class="form-label">Upload new image (file)</label>
+        <input id="imageFile" name="listing[image]" type="file" class="form-control" accept="image/*" />
+        <small class="text-muted">Choose a new image file or leave blank to keep current.</small>
+      </div>
+      <div class="col-md-6 text-center">
+        <img id="previewImg" src="<%= imgUrl %>" class="preview-img img-fluid mt-2 rounded"
+             alt="Preview" style="max-width:100%; max-height:220px; object-fit:cover; border:2px dashed #ddd;" />
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <div class="col-md-6">
+        <label for="price" class="form-label">Price *</label>
+        <input id="price" name="listing[price]" value="<%= listing.price %>" type="number" class="form-control"
+               min="100" max="1000000" step="1" required />
+        <div class="invalid-feedback">Please enter a valid price.</div>
+      </div>
+      <div class="col-md-6">
+        <label for="country" class="form-label">Country *</label>
+        <input id="country" name="listing[country]" value="<%= listing.country %>" type="text" class="form-control"
+               minlength="2" maxlength="60" required />
+        <div class="invalid-feedback">Please enter a country.</div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="location" class="form-label">City/Location *</label>
+      <input id="location" name="listing[location]" value="<%= listing.location %>" type="text" class="form-control"
+             minlength="2" maxlength="100" required />
+      <div class="invalid-feedback">Please enter a location.</div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="maxGuests" class="form-label">Max Guests *</label>
+        <select id="maxGuests" name="listing[maxGuests]" class="form-select" required>
+          <option value="" disabled>Select</option>
+          <% [1,2,3,4,5,6,8].forEach(num => { %>
+            <option value="<%= num %>" <%= listing.maxGuests == num ? "selected" : "" %>><%= num %><%= num === 8 ? "+" : "" %> guests</option>
+          <% }); %>
+        </select>
+        <div class="invalid-feedback">Please select max guests.</div>
+      </div>
+      <div class="col-md-3">
+        <label for="bedrooms" class="form-label">Bedrooms *</label>
+        <select id="bedrooms" name="listing[bedrooms]" class="form-select" required>
+          <option value="" disabled>Select</option>
+          <% [0,1,2,3,4].forEach(num => { %>
+            <option value="<%= num %>" <%= listing.bedrooms == num ? "selected" : "" %>><%= num === 0 ? "Studio" : num %></option>
+          <% }); %>
+        </select>
+        <div class="invalid-feedback">Please select bedrooms.</div>
+      </div>
+      <div class="col-md-3">
+        <label for="bathrooms" class="form-label">Bathrooms *</label>
+        <select id="bathrooms" name="listing[bathrooms]" class="form-select" required>
+          <option value="" disabled>Select</option>
+          <% ["1","1.5","2","3"].forEach(val => { %>
+            <option value="<%= val %>" <%= (listing.bathrooms && listing.bathrooms.toString() === val) ? "selected" : "" %>><%= val %></option>
+          <% }); %>
+        </select>
+        <div class="invalid-feedback">Please select bathrooms.</div>
+      </div>
+      <div class="col-md-3">
+        <label for="category" class="form-label">Property Type *</label>
+        <select id="category" name="listing[category]" class="form-select" required>
+          <option value="" disabled>Select type</option>
+          <% ["apartment","house","villa","cabin","hotel","resort","other"].forEach(cat => { %>
+            <option value="<%= cat %>" <%= listing.category === cat ? "selected" : "" %>><%= cat.charAt(0).toUpperCase()+cat.slice(1) %></option>
+          <% }); %>
+        </select>
+        <div class="invalid-feedback">Please select a property type.</div>
+      </div>
+    </div>
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3"><i class="fas fa-list-check me-2"></i>What does your place offer?</h3>
+      <div class="row">
+        <% availableAmenities.forEach(amenity => { %>
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="form-check amenity-check">
+              <input class="form-check-input" type="checkbox" id="amenity-<%= amenity.id %>" 
+                name="listing[amenities]" value="<%= amenity.label %>" 
+                <%= listing.amenities && listing.amenities.includes(amenity.label) ? 'checked' : '' %> />
+              <label class="form-check-label d-flex align-items-center" for="amenity-<%= amenity.id %>">
+                <i class="<%= amenity.icon %> me-2 text-primary"></i>
+                <strong><%= amenity.label %></strong>
+              </label>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <!-- Host Profile Section -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3"><i class="fas fa-user-circle me-2"></i>Host Information</h3>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="firstName" class="form-label">First Name</label>
+          <input id="firstName" name="host[firstName]" type="text" class="form-control" maxlength="50" value="<%= listing.owner?.firstName || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label for="lastName" class="form-label">Last Name</label>
+          <input id="lastName" name="host[lastName]" type="text" class="form-control" maxlength="50" value="<%= listing.owner?.lastName || '' %>">
+        </div>
+        <div class="col-12">
+          <label for="hostBio" class="form-label">About You</label>
+          <textarea id="hostBio" name="host[bio]" class="form-control" rows="4" maxlength="500"><%= listing.owner?.bio || '' %></textarea>
+          <small id="bioCount" class="form-text text-end">0 / 500</small>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Languages You Speak</label>
+          <div>
+            <% const languages = ['English','Hindi','Spanish','French','German','Italian','Portuguese','Mandarin','Japanese','Arabic']; %>
+            <% languages.forEach(lang => { %>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="lang-<%= lang %>" name="host[languages]" value="<%= lang %>"
+                <%= listing.owner?.languages?.includes(lang) ? 'checked' : '' %> >
+                <label class="form-check-label" for="lang-<%= lang %>"><%= lang %></label>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label for="responseTime" class="form-label">Response Time</label>
+          <select id="responseTime" name="host[responseTime]" class="form-select">
+            <option value="" disabled>Select response time</option>
+            <% ['within an hour','within a few hours','within a day','a few days or more'].forEach(rt => { %>
+              <option value="<%= rt %>" <%= listing.owner?.responseTime === rt ? 'selected' : '' %>><%= rt %></option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mb-5">
+      <button type="submit" class="btn save-btn btn-lg" id="submitBtn">
+        <i class="fas fa-floppy-disk me-2"></i>Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .form-section {
+    transition: all 0.3s ease;
+  }
+  .form-section:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+  }
+  .amenity-check {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .amenity-check:hover {
+    border-color: #3498db;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+  }
+  .amenity-check input:checked + label {
+    color: #3498db;
+    font-weight: 500;
+  }
+  .amenity-check input:checked {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+  .form-check-inline {
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .preview-img {
+    transition: all 0.3s ease;
+  }
+  .preview-img:hover {
+    transform: scale(1.05);
+  }
+  .was-validated .form-control:invalid {
+    border-color: #dc3545;
+    animation: shake 0.5s ease-in-out;
+  }
+  .was-validated .form-control:valid {
+    border-color: #28a745;
+  }
+  .invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875em;
+  }
+  .valid-feedback {
+    display: none;
+    color: #28a745;
+    font-size: 0.875em;
+  }
+  .form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+  }
+  .form-control.is-valid ~ .valid-feedback {
+    display: block;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  .save-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  }
+  .save-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+  }
+  .save-btn:active {
+    transform: scale(0.98);
+  }
+  .save-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  @media (max-width: 768px) {
+    .form-section {
+      padding: 1.5rem !important;
+    }
+    .amenities-grid .col-md-4 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Preview image
+    const imageFile = document.getElementById('imageFile');
+    const preview = document.getElementById('previewImg');
+    if (imageFile && preview) {
+      imageFile.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.border = '2px solid #28a745';
+          };
+          reader.readAsDataURL(this.files[0]);
+        } else {
+          preview.src = '/images/default.jpg';
+          preview.style.border = '2px dashed #ddd';
+        }
+      });
+    }
+
+    // Host bio character counter
+    const bioInput = document.getElementById('hostBio');
+    const bioCount = document.getElementById('bioCount');
+    if (bioInput && bioCount) {
+      bioCount.textContent = bioInput.value.length + ' / 500';
+      bioInput.addEventListener('input', function () {
+        bioCount.textContent = this.value.length + ' / 500';
+      });
+    }
+
+    // Bootstrap validation
+    const form = document.getElementById('editForm');
+    const submitBtn = document.getElementById('submitBtn');
+    form.addEventListener('submit', function (event) {
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+      }
+    });
+  });
+</script>

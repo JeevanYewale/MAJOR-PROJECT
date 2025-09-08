@@ -1,0 +1,790 @@
+<% showNavbar = true %>
+<% stickyFooter = true %>
+<% layout("layouts/boilerplate") %>
+<%
+  const reviews = listing.reviews || [];
+  const averageRating = reviews.length
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(2)
+    : "N/A";
+
+  const imgUrl = listing.image && listing.image.url
+    ? listing.image.url
+    : (typeof listing.image === "string" && listing.image.trim() !== ""
+      ? listing.image
+      : "/images/default.jpg");
+
+  // FIXED: Check owner for secure edit/delete
+  const isOwner = currentUser
+    && listing.owner
+    && String(currentUser._id) === String(listing.owner._id);
+
+  const formatPrice = n => n.toLocaleString('en-IN');
+  const ratingDistribution = [75, 16, 3, 0, 0];
+  const ratingSummary = [
+    { category: "Cleanliness", icon: "fas fa-spray-can-sparkles", value: 4.9 },
+    { category: "Accuracy", icon: "fas fa-check-circle", value: 4.9 },
+    { category: "Check-in", icon: "fas fa-key", value: 4.8 },
+    { category: "Communication", icon: "fas fa-comment", value: 4.8 },
+    { category: "Location", icon: "fas fa-map", value: 5.0 },
+    { category: "Value", icon: "fas fa-tag", value: 4.8 }
+  ];
+  
+  // Helper function to get amenity icons
+  function getAmenityIcon(amenity) {
+    const iconMap = {
+      'Beach access': 'fas fa-water',
+      'Fast wifi': 'fas fa-wifi',
+      'Free parking': 'fas fa-car',
+      'Washer': 'fas fa-soap',
+      'Kitchen': 'fas fa-utensils',
+      'Dedicated workspace': 'fas fa-briefcase',
+      'TV': 'fas fa-tv',
+      'Air conditioning': 'fas fa-snowflake',
+      'Pool': 'fas fa-swimming-pool',
+      'Gym access': 'fas fa-dumbbell',
+      'Pet friendly': 'fas fa-paw',
+      'Fireplace': 'fas fa-fire',
+      'Balcony/Patio': 'fas fa-home',
+      'Garden': 'fas fa-leaf',
+      'Heating': 'fas fa-thermometer-half',
+      'Dryer': 'fas fa-tshirt'
+    };
+    return iconMap[amenity] || 'fas fa-check';
+  }
+  
+  // REAL AMENITIES from database or default fallback
+  const amenities = listing.amenities && listing.amenities.length > 0 
+    ? listing.amenities.map(amenity => ({
+        icon: getAmenityIcon(amenity),
+        label: amenity
+      }))
+    : [
+        { icon: "fas fa-wifi", label: "Basic amenities available" },
+        { icon: "fas fa-car", label: "Parking available" },
+        { icon: "fas fa-utensils", label: "Kitchen facilities" },
+        { icon: "fas fa-tv", label: "Entertainment" }
+      ];
+  
+  // DYNAMIC HOST OBJECT from database
+  const host = {
+    name: listing.owner.fullName || listing.owner.username,
+    reviews: listing.owner.totalHostReviews || 0,
+    rating: listing.owner.hostRating || 0,
+    yearsHosting: listing.owner.yearsHosting || 1,
+    info: [
+      { icon: "fas fa-calendar-alt", text: `Joined ${new Date(listing.owner.joinDate || listing.owner.createdAt).getFullYear()}` },
+      { icon: "fas fa-language", text: `Speaks ${listing.owner.languages && listing.owner.languages.length > 0 ? listing.owner.languages.join(', ') : 'English'}` }
+    ],
+    description: listing.owner.bio || "Welcome! I love sharing amazing places with fellow travelers.",
+    responseRate: listing.owner.responseRate || "95%",
+    responseTime: listing.owner.responseTime || "within a few hours",
+    verified: listing.owner.verified || false,
+    superhost: listing.owner.superhost || false,
+    avatar: listing.owner.avatar || "/images/default-avatar.jpg"
+  };
+
+  // Check if user has favorited this listing
+  const isFavorited = currentUser && currentUser.favorites && currentUser.favorites.includes(listing._id);
+%>
+
+<div class="container my-4">
+  <!-- Enhanced Header with Action Buttons -->
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div class="flex-grow-1">
+      <h1 class="mb-2"><%= listing.title %></h1>
+      <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-star text-warning me-1"></i>
+          <span class="fw-bold"><%= averageRating %></span>
+          <span class="text-muted ms-1">(<%= reviews.length %> reviews)</span>
+        </div>
+        <div class="text-muted">
+          <i class="fas fa-map-marker-alt me-1"></i>
+          <%= listing.location %>, <%= listing.country %>
+        </div>
+        <!-- Property Details -->
+        <div class="text-muted small">
+          <%= listing.maxGuests || 2 %> guests · 
+          <%= listing.bedrooms || 1 %> bedroom<%= (listing.bedrooms || 1) !== 1 ? 's' : '' %> · 
+          <%= listing.bathrooms || 1 %> bath<%= (listing.bathrooms || 1) !== 1 ? 's' : '' %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2 flex-wrap">
+      <% if (currentUser) { %>
+        <button class="btn btn-outline-secondary btn-sm" id="favorite-btn" data-listing-id="<%= listing._id %>" 
+                title="<%= isFavorited ? 'Remove from favorites' : 'Add to favorites' %>">
+          <i class="<%= isFavorited ? 'fas' : 'far' %> fa-heart text-danger"></i>
+        </button>
+      <% } %>
+      
+      <button class="btn btn-outline-secondary btn-sm" id="share-btn" title="Share listing">
+        <i class="fas fa-share"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- LEFT COLUMN -->
+    <div class="col-lg-8">
+      <!-- Enhanced Image with Click to Zoom -->
+      <img src="<%= imgUrl %>" 
+           alt="<%= listing.title %>" 
+           class="img-fluid rounded mb-3 main-listing-image" 
+           style="width: 100%; max-height: 450px; object-fit: cover; cursor: pointer;"
+           title="Click to view full size">
+      
+      <p class="text-muted mb-1">
+        <i class="fas fa-map-marker-alt"></i> <%= listing.location %>, <%= listing.country %>
+      </p>
+      <h4 class="text-primary mb-3">₹ <%= formatPrice(listing.price) %> / night</h4>
+      <p class="mb-4"><%= listing.description %></p>
+    </div>
+    
+    <!-- RIGHT COLUMN -->
+    <div class="col-lg-4 mt-lg-4">
+      <section class="mb-3">
+        <h4>What this place offers</h4>
+        
+        <!-- Visible Amenities (Real data from database) -->
+        <div class="row" id="visible-amenities">
+          <% amenities.slice(0, 8).forEach((a, i) => { %>
+            <div class="col-6">
+              <div class="d-flex align-items-center mb-2">
+                <i class="<%= a.icon %> me-2 text-dark"></i>
+                <span><%= a.label %></span>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+        
+        <!-- Hidden Amenities -->
+        <% if (amenities.length > 8) { %>
+        <div class="row d-none" id="hidden-amenities">
+          <% amenities.slice(8).forEach((a, i) => { %>
+            <div class="col-6">
+              <div class="d-flex align-items-center mb-2">
+                <i class="<%= a.icon %> me-2 text-dark"></i>
+                <span><%= a.label %></span>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+        <% } %>
+      </section>
+      
+      <!-- Enhanced Toggle Button (only if more than 8 amenities) -->
+      <% if (amenities.length > 8) { %>
+      <button class="btn btn-outline-secondary w-100 mb-3" id="toggle-amenities">
+        <span id="amenities-text">Show all <%= amenities.length %> amenities</span>
+        <i class="fas fa-chevron-down ms-2" id="amenities-icon"></i>
+      </button>
+      <% } %>
+
+      <!-- OWNER ONLY Edit/Delete section with Confirmation -->
+      <% if(isOwner) { %>
+      <div class="d-flex gap-3 mb-4">
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger flex-grow-1">Edit</a>
+        <button class="btn btn-dark flex-grow-1" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+          Delete
+        </button>
+      </div>
+      <% } %>
+    </div>
+  </div>
+  
+  <!-- RATING SECTION (unchanged) -->
+  <div class="container-fluid px-0 mb-5">
+    <section class="text-center" style="background: #fff; border-bottom: 1px solid #eee; padding-top:2rem;">
+      <div class="d-flex justify-content-center align-items-center mb-2" style="width: max-content; margin:auto;">
+        <h1 style="font-weight:700; font-size:3rem; margin:0;"><%= averageRating %></h1>
+      </div>
+      <h3 class="fw-semibold mb-1">Guest favourite</h3>
+      <p class="text-muted" style="max-width:320px; margin:auto;">This home is a guest favourite based on ratings, reviews and reliability</p>
+      <div style="display:flex; justify-content:center; width:100%; border-top:1px solid #ddd; border-bottom:1px solid #ddd; padding:1rem 0; max-width:1200px; margin:2rem auto;">
+        <div style="flex-basis:220px; min-width:180px; padding:0 1rem; border-right:1px solid #ddd; text-align:left;">
+          <h6 style="font-weight:600;">Overall rating</h6>
+          <% ratingDistribution.forEach((pct, i) => { %>
+            <div style="display:flex;align-items:center;margin-bottom:0.4rem;">
+              <small><%= 5 - i %></small>
+              <div style="flex-grow:1; margin-left:0.5rem; height:6px; background:#e9ecef; border-radius:2px;">
+                <div style="width:<%= pct %>%;height:100%;background:#212529; border-radius:2px;"></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+        <% ratingSummary.forEach((item, idx) => { %>
+          <div style="flex:1;text-align:center;padding:0 1rem; border-left:1px solid #ddd; border-right:<%= idx === ratingSummary.length - 1 ? 'none' : '1px solid #ddd' %>; display:flex; flex-direction:column; align-items:center;">
+            <div style="font-weight:700;font-size:1.25rem;margin-bottom:.3rem;"><%= item.value %></div>
+            <i class="<%= item.icon %>" style="font-size:1.5rem;color:#212529;margin-bottom:.3rem;"></i>
+            <div style="font-size:.95rem;font-weight:600;white-space:nowrap;"><%= item.category %></div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+  
+  <!-- ENHANCED REVIEWS -->
+  <div class="row my-5">
+    <div class="col-lg-6">
+      <!-- Reviews Header with Sorting -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Reviews (<%= reviews.length %>)</h3>
+        <% if (reviews.length > 0) { %>
+          <select class="form-select form-select-sm" id="review-sort" style="width: auto;">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="highest">Highest rating</option>
+            <option value="lowest">Lowest rating</option>
+          </select>
+        <% } %>
+      </div>
+
+      <div id="reviews-container">
+        <% if (!reviews.length) { %>
+          <div class="text-center py-5">
+            <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No reviews yet. Be the first to write one!</p>
+          </div>
+        <% } else { %>
+          <div class="d-flex align-items-center mb-4">
+            <span class="me-2 fs-2 fw-bold text-dark"><%= averageRating %></span>
+            <div class="text-warning me-2">
+              <% for (let i = 1; i <= 5; i++) { %>
+                <i class="fas fa-star <%= i <= Math.round(averageRating) ? '' : 'text-muted' %>"></i>
+              <% } %>
+            </div>
+            <span class="text-muted">based on <%= reviews.length %> reviews</span>
+          </div>
+          
+          <div id="reviews-list">
+            <% reviews.slice(0,3).forEach(r => { %>
+            <div class="mb-4 pb-3 border-bottom review-item" data-rating="<%= r.rating %>" data-date="<%= r.createdAt %>">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong><%= r.name %></strong>
+                <small class="text-muted"><%= new Date(r.createdAt).toLocaleDateString() %></small>
+              </div>
+              <div class="text-warning mb-2">
+                <% for (let i=1; i<=5; i++) { %>
+                  <i class="fas fa-star <%= i <= r.rating ? '' : 'text-muted' %>"></i>
+                <% } %>
+              </div>
+              <p class="text-muted mb-1" style="max-height:4.5em; overflow:hidden; text-overflow:ellipsis;">
+                <%= r.comment %>
+              </p>
+              <% if (currentUser && (currentUser.isAdmin || isOwner)) { %>
+                <button class="btn btn-sm btn-outline-danger delete-review-btn mt-2" 
+                        data-review-id="<%= r._id %>" 
+                        data-listing-id="<%= listing._id %>">
+                  <i class="fas fa-trash me-1"></i>Delete
+                </button>
+              <% } %>
+            </div>
+            <% }) %>
+          </div>
+          
+          <% if (reviews.length > 3) { %>
+            <div class="text-center">
+              <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#allReviewsModal">
+                Show all <%= reviews.length %> reviews
+              </button>
+            </div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+    
+    <div class="col-lg-6">
+      <div class="card p-4 mb-4">
+        <h4 class="fw-bold mb-3">Add a Review</h4>
+        
+        <!-- Enhanced Review Form -->
+        <form id="review-form" action="/listings/<%= listing._id %>/reviews" method="POST" novalidate>
+          <div class="mb-3">
+            <input type="text" 
+                   id="reviewer-name"
+                   name="review[name]" 
+                   class="form-control" 
+                   placeholder="Your name" 
+                   required 
+                   minlength="2" 
+                   maxlength="100">
+            <div class="invalid-feedback">Name must be between 2-100 characters.</div>
+          </div>
+          
+          <div class="mb-3 star-rating d-flex justify-content-center gap-1">
+            <% for (let i=1; i<=5; i++) { %>
+              <input type="radio" id="star<%= i %>" name="review[rating]" value="<%= i %>" required>
+              <label for="star<%= i %>" class="fs-3" style="cursor: pointer;">★</label>
+            <% } %>
+            <div class="invalid-feedback d-block">Please select a rating.</div>
+          </div>
+          
+          <div class="mb-3">
+            <textarea id="review-comment"
+                      name="review[comment]" 
+                      class="form-control" 
+                      rows="4" 
+                      placeholder="Your review" 
+                      required 
+                      minlength="5" 
+                      maxlength="500"></textarea>
+            <div class="form-text d-flex justify-content-between">
+              <span>Share your experience with this place</span>
+              <span><span id="char-count">0</span>/500</span>
+            </div>
+            <div class="invalid-feedback">Review must be between 5-500 characters.</div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary w-100" id="submit-review-btn">
+            <span class="submit-text">Submit Review</span>
+            <span class="submit-loading d-none">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Submitting...
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- All Reviews Modal (Enhanced) -->
+  <div class="modal fade" id="allReviewsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">All Reviews (<%= reviews.length %>)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Modal Review Sorting -->
+          <div class="mb-3">
+            <select class="form-select" id="modal-review-sort">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="highest">Highest rating</option>
+              <option value="lowest">Lowest rating</option>
+            </select>
+          </div>
+          
+          <div id="modal-reviews-container">
+            <% reviews.forEach(r => { %>
+              <div class="mb-4 pb-3 border-bottom modal-review-item" data-rating="<%= r.rating %>" data-date="<%= r.createdAt %>">
+                <div class="d-flex justify-content-between mb-1">
+                  <strong><%= r.name %></strong>
+                  <small class="text-muted"><%= new Date(r.createdAt).toLocaleDateString() %></small>
+                </div>
+                <div class="text-warning mb-2">
+                  <% for (let i=1; i<=5; i++) { %>
+                    <i class="fas fa-star <%= i <= r.rating ? '' : 'text-muted' %>"></i>
+                  <% } %>
+                </div>
+                <p><%= r.comment %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- DYNAMIC HOST SECTION -->
+  <div class="row mb-5">
+    <div class="col-lg-6 d-flex bg-white p-4 rounded mb-4">
+      <div class="me-3">
+        <img src="<%= host.avatar %>" 
+             alt="<%= host.name %>" 
+             class="rounded-circle" 
+             width="60" 
+             height="60"
+             style="object-fit: cover;"
+             onerror="this.src='/images/default-avatar.jpg'">
+      </div>
+      <div>
+        <h5 class="fw-bold">
+          <%= host.name %>
+          <% if (host.verified) { %>
+            <i class="fas fa-check-circle text-primary ms-1" title="Verified host"></i>
+          <% } %>
+        </h5>
+        <% if (host.superhost) { %>
+          <span class="badge bg-success">Superhost</span>
+        <% } %>
+        <p class="mt-2"><strong><%= host.reviews %></strong> Reviews &middot; <strong><%= host.rating %></strong>★ &middot; <strong><%= host.yearsHosting %></strong> Years hosting</p>
+        <% host.info.forEach(i => { %><p><i class="<%= i.icon %> me-2"></i><%= i.text %></p><% }) %>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="bg-white p-4 rounded mb-3">
+        <h5><%= host.name %><% if (host.superhost) { %> is a Superhost<% } %></h5>
+        <p><%= host.description %></p>
+        <% if (host.superhost) { %>
+          <p class="small text-muted">Superhosts are experienced, highly rated hosts committed to providing great stays.</p>
+        <% } %>
+        <p><strong>Response rate:</strong> <%= host.responseRate %></p>
+        <p><strong>Responds:</strong> <%= host.responseTime %></p>
+        <button class="btn btn-outline-primary" onclick="alert('Message feature coming soon!')">Message host</button>
+      </div>
+      <div class="bg-light p-3 rounded">
+        <i class="fas fa-info-circle me-2"></i>
+        To help protect your payment, always use our platform to send money and communicate with hosts.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<% if (isOwner) { %>
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Listing</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete "<%= listing.title %>"?</p>
+        <p class="text-danger small mb-0">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-danger">Delete Listing</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Delete Review Modal -->
+<div class="modal fade" id="deleteReviewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Review</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this review?</p>
+        <p class="text-danger small mb-0">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="delete-review-form" method="POST">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger">Delete Review</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Zoom Modal -->
+<div class="modal fade" id="imageZoomModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body p-0 text-center">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+        <img id="zoom-image" src="" class="img-fluid rounded" alt="Full size image">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Styles (keeping your original styling) -->
+<style>
+  .star-rating input { display: none; }
+  .star-rating label { 
+    cursor: pointer; 
+    color: #adb5bd; 
+    font-size: 2rem;
+    transition: color 0.2s ease;
+    user-select: none;
+  }
+  .star-rating input:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label { color: #ffc107; }
+  
+  .main-listing-image:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+  
+  .review-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: -1rem;
+    transition: all 0.2s ease;
+  }
+  
+  #amenities-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.25);
+  }
+  
+  .form-control.is-invalid {
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+</style>
+
+<!-- Enhanced JavaScript -->
+<script>
+// Initialize listing data for JavaScript
+window.listingData = {
+  id: '<%= listing._id %>',
+  title: '<%= listing.title %>',
+  location: '<%= listing.location %>',
+  country: '<%= listing.country %>',
+  isFavorited: <%= isFavorited || false %>,
+  currentUser: <%= currentUser ? JSON.stringify({id: currentUser._id, isAdmin: currentUser.isAdmin}) : 'null' %>,
+  isOwner: <%= isOwner || false %>
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Original star rating functionality
+  const labels = document.querySelectorAll('.star-rating label'),
+        inputs = document.querySelectorAll('.star-rating input');
+  const highlight = n => labels.forEach((l,i) => l.style.color = i < n ? '#ffc107' : '#adb5bd');
+  inputs.forEach((r,i) => {
+    r.onchange = () => highlight(i+1);
+    labels[i].onmouseenter = () => highlight(i+1);
+    labels[i].onmouseleave = () => {
+      const c = [...inputs].findIndex(x => x.checked);
+      highlight(c+1);
+    };
+  });
+  highlight(0);
+
+  // Enhanced functionality
+  setupAmenityToggle();
+  setupReviewSorting();
+  setupFavoriteButton();
+  setupShareButton();
+  setupImageZoom();
+  setupCharacterCounter();
+  setupFormValidation();
+  setupDeleteConfirmations();
+});
+
+// Amenity toggle functionality
+function setupAmenityToggle() {
+  const toggleBtn = document.getElementById('toggle-amenities');
+  const hiddenAmenities = document.getElementById('hidden-amenities');
+  const amenitiesText = document.getElementById('amenities-text');
+  const amenitiesIcon = document.getElementById('amenities-icon');
+  
+  if (!toggleBtn) return;
+
+  let isExpanded = false;
+  toggleBtn.addEventListener('click', () => {
+    isExpanded = !isExpanded;
+    
+    if (isExpanded) {
+      hiddenAmenities.classList.remove('d-none');
+      amenitiesText.textContent = 'Show less amenities';
+      amenitiesIcon.style.transform = 'rotate(180deg)';
+    } else {
+      hiddenAmenities.classList.add('d-none');
+      amenitiesText.textContent = 'Show all <%= amenities.length %> amenities';
+      amenitiesIcon.style.transform = 'rotate(0deg)';
+    }
+  });
+}
+
+// Review sorting
+function setupReviewSorting() {
+  const sortSelects = ['review-sort', 'modal-review-sort'];
+  
+  sortSelects.forEach(selectId => {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    
+    select.addEventListener('change', (e) => {
+      const isModal = selectId.includes('modal');
+      const container = document.getElementById(isModal ? 'modal-reviews-container' : 'reviews-list');
+      if (!container) return;
+
+      const reviews = Array.from(container.children);
+      const sortBy = e.target.value;
+      
+      reviews.sort((a, b) => {
+        const aRating = parseInt(a.dataset.rating) || 0;
+        const bRating = parseInt(b.dataset.rating) || 0;
+        const aDate = new Date(a.dataset.date);
+        const bDate = new Date(b.dataset.date);
+        
+        switch(sortBy) {
+          case 'newest': return bDate - aDate;
+          case 'oldest': return aDate - bDate;
+          case 'highest': return bRating - aRating;
+          case 'lowest': return aRating - bRating;
+          default: return 0;
+        }
+      });
+      
+      reviews.forEach(review => container.appendChild(review));
+    });
+  });
+}
+
+// Favorite functionality
+function setupFavoriteButton() {
+  const favoriteBtn = document.getElementById('favorite-btn');
+  if (!favoriteBtn) return;
+
+  favoriteBtn.addEventListener('click', async () => {
+    try {
+      const listingId = favoriteBtn.dataset.listingId;
+      const icon = favoriteBtn.querySelector('i');
+      const isFavorited = icon.classList.contains('fas');
+      
+      // Optimistic update
+      if (isFavorited) {
+        icon.classList.replace('fas', 'far');
+        favoriteBtn.title = 'Add to favorites';
+      } else {
+        icon.classList.replace('far', 'fas');
+        favoriteBtn.title = 'Remove from favorites';
+      }
+
+      // API call (implement this endpoint)
+      const response = await fetch(`/api/listings/${listingId}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        if (isFavorited) {
+          icon.classList.replace('far', 'fas');
+          favoriteBtn.title = 'Remove from favorites';
+        } else {
+          icon.classList.replace('fas', 'far');
+          favoriteBtn.title = 'Add to favorites';
+        }
+        throw new Error('Failed to update favorite');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  });
+}
+
+// Share functionality
+function setupShareButton() {
+  const shareBtn = document.getElementById('share-btn');
+  if (!shareBtn) return;
+  
+  shareBtn.addEventListener('click', async () => {
+    const url = window.location.href;
+    const title = '<%= listing.title %>';
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch (error) {
+        copyToClipboard(url);
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  });
+}
+
+// Image zoom functionality
+function setupImageZoom() {
+  const mainImage = document.querySelector('.main-listing-image');
+  if (!mainImage) return;
+  
+  mainImage.addEventListener('click', () => {
+    const modal = new bootstrap.Modal(document.getElementById('imageZoomModal'));
+    document.getElementById('zoom-image').src = mainImage.src;
+    modal.show();
+  });
+}
+
+// Character counter
+function setupCharacterCounter() {
+  const commentInput = document.getElementById('review-comment');
+  const charCount = document.getElementById('char-count');
+  
+  if (!commentInput || !charCount) return;
+  
+  commentInput.addEventListener('input', () => {
+    const count = commentInput.value.length;
+    charCount.textContent = count;
+    
+    if (count > 450) {
+      charCount.style.color = '#dc3545';
+    } else if (count > 400) {
+      charCount.style.color = '#ffc107';
+    } else {
+      charCount.style.color = '#6c757d';
+    }
+  });
+}
+
+// Form validation
+function setupFormValidation() {
+  const form = document.getElementById('review-form');
+  if (!form) return;
+  
+  form.addEventListener('submit', (e) => {
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  });
+}
+
+// Delete confirmations
+function setupDeleteConfirmations() {
+  const deleteReviewBtns = document.querySelectorAll('.delete-review-btn');
+  const deleteReviewForm = document.getElementById('delete-review-form');
+  
+  deleteReviewBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const reviewId = btn.dataset.reviewId;
+      const listingId = btn.dataset.listingId;
+      
+      if (deleteReviewForm) {
+        deleteReviewForm.action = `/listings/${listingId}/reviews/${reviewId}`;
+      }
+      
+      const modal = new bootstrap.Modal(document.getElementById('deleteReviewModal'));
+      modal.show();
+    });
+  });
+}
+
+// Utility function
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Link copied to clipboard!');
+    });
+  } else {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('Link copied to clipboard!');
+  }
+}
+</script>

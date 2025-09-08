@@ -1,0 +1,559 @@
+<% showNavbar = true %>
+<% stickyFooter = true %>
+<% layout("layouts/boilerplate") %>
+
+<%
+  // Check if user needs to complete host profile
+  const needsHostProfile = !currentUser.bio || !currentUser.languages || currentUser.languages.length === 0;
+  
+  // Available amenities
+  const availableAmenities = [
+    { id: "beach-access", icon: "fas fa-water", label: "Beach access" },
+    { id: "wifi", icon: "fas fa-wifi", label: "Fast wifi" },
+    { id: "parking", icon: "fas fa-car", label: "Free parking" },
+    { id: "washer", icon: "fas fa-soap", label: "Washer" },
+    { id: "kitchen", icon: "fas fa-utensils", label: "Kitchen" },
+    { id: "workspace", icon: "fas fa-briefcase", label: "Dedicated workspace" },
+    { id: "tv", icon: "fas fa-tv", label: "TV" },
+    { id: "ac", icon: "fas fa-snowflake", label: "Air conditioning" },
+    { id: "pool", icon: "fas fa-swimming-pool", label: "Pool" },
+    { id: "gym", icon: "fas fa-dumbbell", label: "Gym access" },
+    { id: "pet-friendly", icon: "fas fa-paw", label: "Pet friendly" },
+    { id: "fireplace", icon: "fas fa-fire", label: "Fireplace" },
+    { id: "balcony", icon: "fas fa-home", label: "Balcony/Patio" },
+    { id: "garden", icon: "fas fa-leaf", label: "Garden" },
+    { id: "heating", icon: "fas fa-thermometer-half", label: "Heating" },
+    { id: "dryer", icon: "fas fa-tshirt", label: "Dryer" }
+  ];
+%>
+
+<div class="container new-page-wrapper my-0">
+  <header class="new-header mb-3">
+    <div class="d-flex align-items-center justify-content-between gap-3 flex-column flex-sm-row">
+      <div class="d-flex align-items-center gap-3">
+        <span class="header-badge" aria-hidden="true">
+          <i class="fa-solid fa-house-circle-check"></i>
+        </span>
+        <div>
+          <h1 class="new-main-title mb-1">Create a New Listing</h1>
+          <div class="new-subtitle">Add your property details and image</div>
+        </div>
+      </div>
+      <div class="header-actions d-flex gap-2">
+        <a href="/listings" class="btn btn-outline-secondary btn-sm">Back to listings</a>
+      </div>
+    </div>
+  </header>
+
+  <form id="newForm" method="POST" action="/listings" enctype="multipart/form-data"
+        class="needs-validation" novalidate>
+    
+    <!-- Basic Property Information -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-home me-2"></i>Basic Property Information
+      </h3>
+      
+      <div class="mb-3">
+        <label for="title" class="form-label">Property Title *</label>
+        <input id="title" name="listing[title]" placeholder="Enter a catchy title for your property" type="text" 
+               class="form-control" required minlength="3" maxlength="100" />
+        <div class="invalid-feedback">Title is required (3-100 characters).</div>
+        <div class="valid-feedback">Great title!</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description *</label>
+        <textarea id="description" name="listing[description]" placeholder="Describe your property, what makes it special, nearby attractions..." 
+                  class="form-control" rows="4" required minlength="10" maxlength="2000"></textarea>
+        <div class="form-text">
+          <span id="desc-count">0</span>/2000 characters
+        </div>
+        <div class="invalid-feedback">Description is required (10-2000 characters).</div>
+        <div class="valid-feedback">Perfect description!</div>
+      </div>
+
+      <!-- Property Details -->
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label for="maxGuests" class="form-label">Max Guests *</label>
+          <select id="maxGuests" name="listing[maxGuests]" class="form-control" required>
+            <option value="">Select</option>
+            <option value="1">1 guest</option>
+            <option value="2">2 guests</option>
+            <option value="3">3 guests</option>
+            <option value="4">4 guests</option>
+            <option value="5">5 guests</option>
+            <option value="6">6 guests</option>
+            <option value="8">8+ guests</option>
+          </select>
+          <div class="invalid-feedback">Please select max guests.</div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+          <label for="bedrooms" class="form-label">Bedrooms *</label>
+          <select id="bedrooms" name="listing[bedrooms]" class="form-control" required>
+            <option value="">Select</option>
+            <option value="0">Studio</option>
+            <option value="1">1 bedroom</option>
+            <option value="2">2 bedrooms</option>
+            <option value="3">3 bedrooms</option>
+            <option value="4">4+ bedrooms</option>
+          </select>
+          <div class="invalid-feedback">Please select bedrooms.</div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+          <label for="bathrooms" class="form-label">Bathrooms *</label>
+          <select id="bathrooms" name="listing[bathrooms]" class="form-control" required>
+            <option value="">Select</option>
+            <option value="1">1 bathroom</option>
+            <option value="1.5">1.5 bathrooms</option>
+            <option value="2">2 bathrooms</option>
+            <option value="3">3+ bathrooms</option>
+          </select>
+          <div class="invalid-feedback">Please select bathrooms.</div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+          <label for="category" class="form-label">Property Type *</label>
+          <select id="category" name="listing[category]" class="form-control" required>
+            <option value="">Select type</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="villa">Villa</option>
+            <option value="cabin">Cabin</option>
+            <option value="hotel">Hotel</option>
+            <option value="resort">Resort</option>
+            <option value="other">Other</option>
+          </select>
+          <div class="invalid-feedback">Please select property type.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location & Pricing -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-map-marker-alt me-2"></i>Location & Pricing
+      </h3>
+      
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="country" class="form-label">Country *</label>
+          <input id="country" name="listing[country]" placeholder="e.g., India, USA, UK" 
+                 type="text" class="form-control" required minlength="2" maxlength="60" />
+          <div class="invalid-feedback">Country is required (2-60 characters).</div>
+          <div class="valid-feedback">Country looks valid!</div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+          <label for="location" class="form-label">City/Location *</label>
+          <input id="location" name="listing[location]" placeholder="e.g., Mumbai, New York, London" 
+                type="text" class="form-control" required minlength="2" maxlength="100" />
+          <div class="invalid-feedback">Location is required (2-100 characters).</div>
+          <div class="valid-feedback">Nice location!</div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+          <label for="price" class="form-label">Price per night (₹) *</label>
+          <input id="price" name="listing[price]" placeholder="Enter price" type="number" 
+                 min="100" max="1000000" step="1" class="form-control" required />
+          <div class="invalid-feedback">Price must be between ₹100 and ₹10,00,000.</div>
+          <div class="valid-feedback">Valid price!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Image -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-camera me-2"></i>Property Photos
+      </h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <label for="imageFile" class="form-label">Upload main property image *</label>
+          <input id="imageFile" name="listing[image]" type="file" class="form-control" accept="image/*" required />
+          <small class="text-muted">Upload a high-quality photo that showcases your property.</small>
+          <div class="invalid-feedback">Please upload a property image.</div>
+        </div>
+        <div class="col-md-6 text-center">
+          <img id="previewImg" src="/images/default.jpg" class="preview-img img-fluid mt-2 rounded" 
+              alt="Property preview" style="max-width:100%; height:200px; object-fit:cover; border: 2px dashed #ddd;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Amenities Selection -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-list-check me-2"></i>What does your place offer?
+      </h3>
+      <p class="text-muted mb-3">Select all amenities that apply to your property:</p>
+      
+      <div class="amenities-grid">
+        <div class="row">
+          <% availableAmenities.forEach((amenity, index) => { %>
+            <div class="col-md-4 col-sm-6 mb-3">
+              <div class="form-check amenity-check">
+                <input class="form-check-input" type="checkbox" id="amenity-<%= amenity.id %>" 
+                       name="listing[amenities]" value="<%= amenity.label %>" />
+                <label class="form-check-label d-flex align-items-center" for="amenity-<%= amenity.id %>">
+                  <i class="<%= amenity.icon %> me-2 text-primary"></i>
+                  <%= amenity.label %>
+                </label>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Host Profile (only show if user needs to complete profile) -->
+    <% if (needsHostProfile) { %>
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-user-circle me-2"></i>Complete Your Host Profile
+      </h3>
+      <p class="text-muted mb-3">Help guests get to know you better by completing your host profile:</p>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="firstName" class="form-label">First Name</label>
+          <input id="firstName" name="host[firstName]" type="text" class="form-control" 
+                 value="<%= currentUser.firstName || '' %>" maxlength="50" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="lastName" class="form-label">Last Name</label>
+          <input id="lastName" name="host[lastName]" type="text" class="form-control" 
+                 value="<%= currentUser.lastName || '' %>" maxlength="50" />
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="hostBio" class="form-label">About You</label>
+        <textarea id="hostBio" name="host[bio]" class="form-control" rows="3" maxlength="500"
+                  placeholder="Tell guests about yourself, your interests, and what you love about hosting..."><%= currentUser.bio || '' %></textarea>
+        <div class="form-text">
+          <span id="bio-count">0</span>/500 characters
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="languages" class="form-label">Languages You Speak</label>
+          <div class="languages-checkboxes">
+            <% const commonLanguages = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Mandarin', 'Japanese', 'Arabic']; %>
+            <% commonLanguages.forEach(lang => { %>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="lang-<%= lang.toLowerCase() %>" 
+                       name="host[languages]" value="<%= lang %>" 
+                       <%= (currentUser.languages && currentUser.languages.includes(lang)) ? 'checked' : '' %> />
+                <label class="form-check-label" for="lang-<%= lang.toLowerCase() %>"><%= lang %></label>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <label for="responseTime" class="form-label">Response Time</label>
+          <select id="responseTime" name="host[responseTime]" class="form-control">
+            <option value="within an hour" <%= (currentUser.responseTime === 'within an hour') ? 'selected' : '' %>>Within an hour</option>
+            <option value="within a few hours" <%= (currentUser.responseTime === 'within a few hours') ? 'selected' : '' %>>Within a few hours</option>
+            <option value="within a day" <%= (currentUser.responseTime === 'within a day') ? 'selected' : '' %>>Within a day</option>
+            <option value="a few days or more" <%= (currentUser.responseTime === 'a few days or more') ? 'selected' : '' %>>A few days or more</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+     <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-user-circle me-2"></i>Host Information
+      </h3>
+      <p class="text-muted mb-3">Help guests get to know you better by completing your host profile:</p>
+      
+      <div class="mb-3">
+        <label for="hostName" class="form-label">Full Name *</label>
+        <input id="hostName" name="host[name]" type="text" class="form-control" 
+               value="<%= currentUser.name || '' %>" maxlength="100" required />
+      </div>
+      
+      <div class="mb-3">
+        <label for="hostBio" class="form-label">About You *</label>
+        <textarea id="hostBio" name="host[bio]" class="form-control" rows="3" maxlength="500"
+                  placeholder="Tell guests about yourself, your interests, and what you love about hosting..." required><%= currentUser.bio || '' %></textarea>
+        <div class="form-text">
+          <span id="bio-count">0</span>/500 characters
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Languages You Speak *</label>
+          <div class="languages-checkboxes">
+            <% const commonLanguages = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Mandarin', 'Japanese', 'Arabic']; %>
+            <% commonLanguages.forEach(lang => { %>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="lang-<%= lang.toLowerCase() %>" 
+                       name="host[languages]" value="<%= lang %>" 
+                       <%= (currentUser.languages && currentUser.languages.includes(lang)) ? 'checked' : '' %> />
+                <label class="form-check-label" for="lang-<%= lang.toLowerCase() %>"><%= lang %></label>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <label for="responseTime" class="form-label">Response Time *</label>
+          <select id="responseTime" name="host[responseTime]" class="form-control" required>
+            <option value="">Select</option>
+            <option value="within an hour" <%= (currentUser.responseTime === 'within an hour') ? 'selected' : '' %>>Within an hour</option>
+            <option value="within a few hours" <%= (currentUser.responseTime === 'within a few hours') ? 'selected' : '' %>>Within a few hours</option>
+            <option value="within a day" <%= (currentUser.responseTime === 'within a day') ? 'selected' : '' %>>Within a day</option>
+            <option value="a few days or more" <%= (currentUser.responseTime === 'a few days or more') ? 'selected' : '' %>>A few days or more</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center">
+      <button class="btn save-btn btn-lg" type="submit" id="submit-btn">
+        <i class="fas fa-plus-circle me-2"></i>Create Listing
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .form-section {
+    transition: all 0.3s ease;
+  }
+  
+  .form-section:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+  }
+  
+  .amenity-check {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .amenity-check:hover {
+    border-color: #3498db;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+  }
+  
+  .amenity-check input:checked + label {
+    color: #3498db;
+    font-weight: 500;
+  }
+  
+  .amenity-check input:checked {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+  
+  .languages-checkboxes {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  
+  .form-check-inline {
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .preview-img {
+    transition: all 0.3s ease;
+  }
+  
+  .preview-img:hover {
+    transform: scale(1.05);
+  }
+  
+  .was-validated .form-control:invalid { 
+    border-color: #dc3545; 
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  .was-validated .form-control:valid { 
+    border-color: #28a745; 
+  }
+  
+  .invalid-feedback { 
+    display: none; 
+    color: #dc3545; 
+    font-size: 0.875em; 
+  }
+  
+  .valid-feedback { 
+    display: none; 
+    color: #28a745; 
+    font-size: 0.875em; 
+  }
+  
+  .form-control.is-invalid ~ .invalid-feedback { 
+    display: block; 
+  }
+  
+  .form-control.is-valid ~ .valid-feedback { 
+    display: block; 
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  .save-btn { 
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: #fff; 
+    font-weight: 600; 
+    border: none; 
+    border-radius: 25px; 
+    padding: 12px 32px; 
+    font-size: 1.1rem; 
+    transition: all 0.3s ease; 
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); 
+  }
+  
+  .save-btn:hover { 
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); 
+  }
+  
+  .save-btn:active { 
+    transform: scale(0.98); 
+  }
+  
+  .save-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .form-section {
+      padding: 1.5rem !important;
+    }
+    
+    .amenities-grid .col-md-4 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Image preview
+    const imageFile = document.getElementById('imageFile');
+    const preview = document.getElementById('previewImg');
+
+    imageFile.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.border = '2px solid #28a745';
+        };
+        reader.readAsDataURL(this.files[0]);
+      } else {
+        preview.src = '/images/default.jpg';
+        preview.style.border = '2px dashed #ddd';
+      }
+    });
+
+    // Character counters
+    const descInput = document.getElementById('description');
+    const descCount = document.getElementById('desc-count');
+    const bioInput = document.getElementById('hostBio');
+    const bioCount = document.getElementById('bio-count');
+
+    if (descInput && descCount) {
+      descInput.addEventListener('input', function() {
+        descCount.textContent = this.value.length;
+      });
+    }
+
+    if (bioInput && bioCount) {
+      bioInput.addEventListener('input', function() {
+        bioCount.textContent = this.value.length;
+      });
+      // Initialize counter
+      bioCount.textContent = bioInput.value.length;
+    }
+
+    // Enhanced form validation
+    const form = document.getElementById('newForm');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', function(event) {
+      form.classList.add('was-validated');
+      
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Scroll to first invalid field
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) {
+          firstInvalid.focus();
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Listing...';
+      }
+    });
+
+    // Real-time validation
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+      input.addEventListener('blur', function() {
+        if (form.classList.contains('was-validated')) {
+          if (this.checkValidity()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+          } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+          }
+        }
+      });
+    });
+
+    // Amenities interaction
+    const amenityChecks = document.querySelectorAll('.amenity-check');
+    amenityChecks.forEach(check => {
+      const input = check.querySelector('input');
+      check.addEventListener('click', function(e) {
+        if (e.target !== input) {
+          input.checked = !input.checked;
+        }
+      });
+    });
+  });
+</script>

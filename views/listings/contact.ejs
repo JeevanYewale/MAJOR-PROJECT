@@ -1,0 +1,841 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- Enhanced Hero Section with Rich Gradients -->
+<section class="py-5 text-center text-white premium-hero" style="background: linear-gradient(135deg, #FF5A5F 0%, #FC642D 50%, #FFB400 100%), linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);">
+  <div class="container">
+    <div class="hero-badge mb-4">
+      <i class="fas fa-headset me-2"></i>
+      <span>Premium Support • Available 24/7</span>
+    </div>
+    <h1 class="display-2 fw-bold hero-title">Get in Touch</h1>
+    <p class="lead fs-3 hero-subtitle">Experience world-class support and personalized assistance</p>
+    <div class="hero-decoration">
+      <div class="decoration-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Premium Contact Form Section -->
+<div class="container my-6">
+  <div class="row g-5">
+    <!-- Enhanced Contact Form -->
+    <div class="col-lg-8">
+      <div class="premium-card bg-white p-5 rounded-5 shadow-luxury">
+        <div class="form-header mb-4">
+          <div class="section-label mb-3">
+            <span class="label-line-premium"></span>
+            <span class="label-text-premium">Send Message</span>
+          </div>
+          <h2 class="mb-3 fw-bold text-gradient-rich">Let's Start a Conversation</h2>
+          <p class="text-muted-rich lead">Share your thoughts with us and experience our premium support within 24 hours.</p>
+        </div>
+        
+        <form id="contactForm" action="/contact" method="POST" onsubmit="showThankYou(event)" novalidate>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label for="name" class="form-label-premium">Full Name *</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control-premium" id="name" name="name" 
+                       placeholder="Enter your full name" required minlength="3" maxlength="100">
+              </div>
+              <div class="invalid-feedback-premium">Please enter your name (3-100 characters).</div>
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label-premium">Email Address *</label>
+              <div class="input-wrapper">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" class="form-control-premium" id="email" name="email" 
+                       placeholder="Enter your email address" required>
+              </div>
+              <div class="invalid-feedback-premium">Valid email is required.</div>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <label for="subject" class="form-label-premium">Subject *</label>
+            <div class="input-wrapper">
+              <i class="fas fa-tag input-icon"></i>
+              <select class="form-control-premium" id="subject" name="subject" required>
+                <option value="">Choose your inquiry type</option>
+                <option value="booking">🏨 Booking Inquiry</option>
+                <option value="support">🎯 Customer Support</option>
+                <option value="partnership">🤝 Partnership Opportunity</option>
+                <option value="feedback">⭐ Feedback & Review</option>
+                <option value="other">💬 Other Questions</option>
+              </select>
+            </div>
+            <div class="invalid-feedback-premium">Please select a subject.</div>
+          </div>
+
+          <div class="mt-4">
+            <label for="message" class="form-label-premium">Your Message *</label>
+            <div class="input-wrapper">
+              <i class="fas fa-comment-alt input-icon textarea-icon"></i>
+              <textarea class="form-control-premium" id="message" name="message" rows="5" 
+                        placeholder="Share your thoughts, questions, or requirements..." required minlength="10" maxlength="2000"></textarea>
+            </div>
+            <div class="invalid-feedback-premium">Please write a message (10-2000 characters).</div>
+          </div>
+
+          <div class="mt-5 text-center">
+            <button type="submit" class="btn-premium-gradient">
+              <span class="btn-content">
+                <i class="fas fa-paper-plane me-2"></i>
+                Send Message
+              </span>
+              <div class="btn-shine"></div>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Enhanced Contact Information -->
+    <div class="col-lg-4">
+      <div class="contact-cards-wrapper">
+        <!-- Phone Card -->
+        <div class="contact-card premium-card bg-white p-4 rounded-4 shadow-rich mb-4">
+          <div class="text-center">
+            <div class="contact-icon-premium phone-gradient mb-3">
+              <i class="fas fa-phone"></i>
+            </div>
+            <h5 class="fw-bold text-gradient-rich">Call Our Experts</h5>
+            <p class="text-muted-rich">Direct line to travel specialists</p>
+            <a href="tel:+919876543210" class="btn btn-outline-gradient rounded-pill px-4">
+              <i class="fas fa-phone me-2"></i>+91 98765 43210
+            </a>
+          </div>
+        </div>
+
+        <!-- Email Card -->
+        <div class="contact-card premium-card bg-white p-4 rounded-4 shadow-rich mb-4">
+          <div class="text-center">
+            <div class="contact-icon-premium email-gradient mb-3">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <h5 class="fw-bold text-gradient-rich">Email Support</h5>
+            <p class="text-muted-rich">Professional assistance anytime</p>
+            <a href="mailto:support@travelstay.com" class="btn btn-outline-gradient rounded-pill px-4">
+              <i class="fas fa-envelope me-2"></i>Get Support
+            </a>
+          </div>
+        </div>
+
+        <!-- Office Card -->
+        <div class="contact-card premium-card bg-white p-4 rounded-4 shadow-rich mb-4">
+          <div class="text-center">
+            <div class="contact-icon-premium location-gradient mb-3">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h5 class="fw-bold text-gradient-rich">Visit Our Office</h5>
+            <p class="text-muted-rich">Premium headquarters experience</p>
+            <address class="mb-0 address-premium">
+              <strong>TravelStay HQ</strong><br>
+              123 Wanderlust Avenue,<br>
+              Travel City, 45678
+            </address>
+          </div>
+        </div>
+
+        <!-- Social Card -->
+        <div class="contact-card premium-card bg-gradient-luxury p-4 rounded-4 shadow-rich text-white">
+          <h5 class="fw-bold text-center mb-4">Connect With Us</h5>
+          <div class="social-links-premium">
+            <a href="#" class="social-btn facebook-premium">
+              <i class="fab fa-facebook-f"></i>
+              <span>Facebook</span>
+            </a>
+            <a href="#" class="social-btn instagram-premium">
+              <i class="fab fa-instagram"></i>
+              <span>Instagram</span>
+            </a>
+            <a href="#" class="social-btn twitter-premium">
+              <i class="fab fa-twitter"></i>
+              <span>Twitter</span>
+            </a>
+            <a href="#" class="social-btn linkedin-premium">
+              <i class="fab fa-linkedin-in"></i>
+              <span>LinkedIn</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="premium-divider my-6">
+
+<!-- Enhanced FAQ Section -->
+<div class="bg-gradient-subtle py-6">
+  <div class="container">
+    <div class="section-label text-center mb-4">
+      <span class="label-line-premium"></span>
+      <span class="label-text-premium">FAQ</span>
+    </div>
+    <h2 class="text-center mb-5 fw-bold display-5 text-gradient-rich">Frequently Asked Questions</h2>
+    <p class="text-center mb-5 lead text-muted-rich">Quick answers to help you get started</p>
+    
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="faq-wrapper">
+          <div class="faq-item premium-card bg-white rounded-4 shadow-soft mb-4">
+            <div class="faq-header" onclick="toggleFAQ(this)">
+              <h6 class="mb-0 fw-semibold text-gradient-rich">How do I make a reservation?</h6>
+              <div class="faq-icon">
+                <i class="fas fa-chevron-down"></i>
+              </div>
+            </div>
+            <div class="faq-content">
+              <p class="text-muted-rich">Browse our curated listings, select your perfect dates, and click "Book Now". Our secure, streamlined booking system guides you through each step for a seamless experience.</p>
+            </div>
+          </div>
+
+          <div class="faq-item premium-card bg-white rounded-4 shadow-soft mb-4">
+            <div class="faq-header" onclick="toggleFAQ(this)">
+              <h6 class="mb-0 fw-semibold text-gradient-rich">What is your cancellation policy?</h6>
+              <div class="faq-icon">
+                <i class="fas fa-chevron-down"></i>
+              </div>
+            </div>
+            <div class="faq-content">
+              <p class="text-muted-rich">Our flexible cancellation policies vary by property. Most premium bookings offer complimentary cancellation up to 48 hours before check-in. Specific terms are clearly outlined in each property listing.</p>
+            </div>
+          </div>
+
+          <div class="faq-item premium-card bg-white rounded-4 shadow-soft mb-4">
+            <div class="faq-header" onclick="toggleFAQ(this)">
+              <h6 class="mb-0 fw-semibold text-gradient-rich">How do I contact my host?</h6>
+              <div class="faq-icon">
+                <i class="fas fa-chevron-down"></i>
+              </div>
+            </div>
+            <div class="faq-content">
+              <p class="text-muted-rich">Upon confirmation, receive verified host contact details and access to our secure messaging platform. Connect directly through your personalized booking dashboard for instant communication.</p>
+            </div>
+          </div>
+
+          <div class="faq-item premium-card bg-white rounded-4 shadow-soft">
+            <div class="faq-header" onclick="toggleFAQ(this)">
+              <h6 class="mb-0 fw-semibold text-gradient-rich">Is customer support available 24/7?</h6>
+              <div class="faq-icon">
+                <i class="fas fa-chevron-down"></i>
+              </div>
+            </div>
+            <div class="faq-content">
+              <p class="text-muted-rich">Absolutely! Our premium support team provides round-the-clock assistance via phone, email, and live chat. Experience world-class service whenever you need us.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Premium Toast Notification -->
+<div id="toast" class="toast-premium">
+  <div class="toast-icon-premium">
+    <i class="fas fa-check-circle"></i>
+  </div>
+  <div class="toast-content-premium">
+    <div class="toast-title">Message Sent Successfully!</div>
+    <div class="toast-message">Thank you for reaching out. Our premium support team will respond within 24 hours.</div>
+  </div>
+  <div class="toast-close" onclick="closeToast()">
+    <i class="fas fa-times"></i>
+  </div>
+</div>
+
+<!-- Enhanced JavaScript -->
+<script>
+function showThankYou(event) {
+  event.preventDefault();
+  
+  const form = event.target;
+  form.classList.add('was-validated');
+  
+  const inputs = form.querySelectorAll('input[required], textarea[required], select[required]');
+  let isValid = true;
+  
+  inputs.forEach(input => {
+    if (!input.checkValidity()) {
+      input.classList.add('is-invalid');
+      input.parentElement.classList.add('error-state');
+      isValid = false;
+    } else {
+      input.classList.remove('is-invalid');
+      input.parentElement.classList.remove('error-state');
+      input.classList.add('is-valid');
+      input.parentElement.classList.add('success-state');
+    }
+  });
+  
+  if (!isValid) {
+    const firstInvalid = form.querySelector('.is-invalid');
+    if (firstInvalid) {
+      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstInvalid.focus();
+    }
+    return;
+  }
+  
+  // Show premium toast
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  
+  // Premium button animation
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalContent = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<span class="btn-content"><i class="fas fa-spinner fa-spin me-2"></i>Sending...</span>';
+  submitBtn.disabled = true;
+  submitBtn.classList.add('btn-loading');
+  
+  setTimeout(() => {
+    form.reset();
+    form.classList.remove('was-validated');
+    
+    // Reset validation states
+    form.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+      el.classList.remove('is-valid', 'is-invalid');
+    });
+    form.querySelectorAll('.success-state, .error-state').forEach(el => {
+      el.classList.remove('success-state', 'error-state');
+    });
+    
+    submitBtn.innerHTML = originalContent;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('btn-loading');
+  }, 3000);
+}
+
+function toggleFAQ(element) {
+  const faqItem = element.parentElement;
+  const content = faqItem.querySelector('.faq-content');
+  const icon = element.querySelector('.faq-icon i');
+  
+  // Close all other FAQs
+  document.querySelectorAll('.faq-item').forEach(item => {
+    if (item !== faqItem) {
+      item.classList.remove('active');
+      item.querySelector('.faq-content').style.maxHeight = '0';
+      item.querySelector('.faq-icon i').style.transform = 'rotate(0deg)';
+    }
+  });
+  
+  // Toggle current FAQ
+  faqItem.classList.toggle('active');
+  if (faqItem.classList.contains('active')) {
+    content.style.maxHeight = content.scrollHeight + 'px';
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    content.style.maxHeight = '0';
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+
+function closeToast() {
+  document.getElementById("toast").classList.remove("show");
+}
+</script>
+
+<!-- Premium Styles -->
+<style>
+  /* Premium Variables */
+  :root {
+    --gradient-primary: linear-gradient(135deg, #FF5A5F, #FC642D, #FFB400);
+    --gradient-luxury: linear-gradient(135deg, #667eea, #764ba2);
+    --gradient-phone: linear-gradient(135deg, #4facfe, #00f2fe);
+    --gradient-email: linear-gradient(135deg, #fa709a, #fee140);
+    --gradient-location: linear-gradient(135deg, #a8edea, #fed6e3);
+    --shadow-luxury: 0 20px 60px rgba(0, 0, 0, 0.08);
+    --shadow-rich: 0 10px 30px rgba(0, 0, 0, 0.12);
+    --shadow-soft: 0 5px 20px rgba(0, 0, 0, 0.06);
+    --text-rich: #2d3748;
+    --text-muted-rich: #4a5568;
+  }
+
+  /* Premium Spacing */
+  .my-6 { margin-top: 4rem !important; margin-bottom: 4rem !important; }
+  .py-6 { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+
+  /* Enhanced Hero */
+  .premium-hero {
+    position: relative;
+    overflow: hidden;
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  .premium-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255,255,255,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .hero-title {
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-subtitle {
+    opacity: 0.95;
+    font-weight: 400;
+  }
+
+  .hero-decoration {
+    margin-top: 2rem;
+  }
+
+  .decoration-dots {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .decoration-dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    animation: pulse 2s infinite;
+  }
+
+  .decoration-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .decoration-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Premium Cards */
+  .premium-card {
+    border: 1px solid rgba(255, 90, 95, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: var(--gradient-primary);
+    transition: left 0.6s ease;
+  }
+
+  .premium-card:hover::before {
+    left: 100%;
+  }
+
+  .premium-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-luxury);
+    border-color: rgba(255, 90, 95, 0.2);
+  }
+
+  /* Section Labels */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .section-label.text-center {
+    justify-content: center;
+  }
+
+  .label-line-premium {
+    width: 50px;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 2px;
+  }
+
+  .label-text-premium {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #FF5A5F;
+  }
+
+  /* Rich Text Gradients */
+  .text-gradient-rich {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+
+  .text-muted-rich {
+    color: var(--text-muted-rich);
+  }
+
+  /* Premium Form Controls */
+  .form-label-premium {
+    font-weight: 700;
+    color: var(--text-rich);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .input-wrapper {
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted-rich);
+    font-size: 1rem;
+    z-index: 2;
+  }
+
+  .textarea-icon {
+    top: 1.2rem;
+    transform: none;
+  }
+
+  .form-control-premium {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: var(--text-rich);
+    background: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .form-control-premium:focus {
+    outline: none;
+    border-color: #FF5A5F;
+    box-shadow: 0 0 0 4px rgba(255, 90, 95, 0.1), 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .success-state .form-control-premium {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #fff 0%, rgba(40, 167, 69, 0.02) 100%);
+  }
+
+  .error-state .form-control-premium {
+    border-color: #dc3545;
+    background: linear-gradient(135deg, #fff 0%, rgba(220, 53, 69, 0.02) 100%);
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .invalid-feedback-premium {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    display: none;
+  }
+
+  .error-state .invalid-feedback-premium {
+    display: block;
+  }
+
+  /* Premium Button */
+  .btn-premium-gradient {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 1.2rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 25px rgba(255, 90, 95, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-premium-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 90, 95, 0.4);
+  }
+
+  .btn-premium-gradient:active {
+    transform: translateY(-1px);
+  }
+
+  .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .btn-premium-gradient:hover .btn-shine {
+    left: 100%;
+  }
+
+  /* Contact Icons */
+  .contact-icon-premium {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    margin: 0 auto;
+    box-shadow: var(--shadow-rich);
+    transition: all 0.3s ease;
+  }
+
+  .phone-gradient { background: var(--gradient-phone); }
+  .email-gradient { background: var(--gradient-email); }
+  .location-gradient { background: var(--gradient-location); }
+
+  .contact-card:hover .contact-icon-premium {
+    transform: scale(1.1) rotateY(180deg);
+  }
+
+  /* Outline Gradient Button */
+  .btn-outline-gradient {
+    border: 2px solid;
+    border-image: var(--gradient-primary) 1;
+    background: transparent;
+    color: #FF5A5F;
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+
+  .btn-outline-gradient:hover {
+    background: var(--gradient-primary);
+    color: white;
+    border-image: none;
+    border-color: transparent;
+    transform: translateY(-2px);
+  }
+
+  /* Address Premium */
+  .address-premium {
+    color: var(--text-muted-rich);
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  /* Luxury Background Gradient */
+  .bg-gradient-luxury {
+    background: var(--gradient-luxury);
+  }
+
+  .bg-gradient-subtle {
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 50%, #e2e8f0 100%);
+  }
+
+  /* Premium Social Links */
+  .social-links-premium {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .social-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+  }
+
+  .social-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    color: white;
+  }
+
+  /* Premium FAQ */
+  .faq-item {
+    transition: all 0.3s ease;
+  }
+
+  .faq-header {
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+
+  .faq-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+
+  .faq-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    padding: 0 1.5rem;
+  }
+
+  .faq-item.active .faq-content {
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  /* Premium Divider */
+  .premium-divider {
+    border: none;
+    height: 2px;
+    background: var(--gradient-primary);
+    opacity: 0.3;
+  }
+
+  /* Premium Toast */
+  .toast-premium {
+    position: fixed;
+    bottom: -200px;
+    right: 2rem;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-luxury);
+    border: 1px solid rgba(255, 90, 95, 0.2);
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    max-width: 400px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 10000;
+    opacity: 0;
+  }
+
+  .toast-premium.show {
+    bottom: 2rem;
+    opacity: 1;
+  }
+
+  .toast-icon-premium {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .toast-content-premium {
+    flex: 1;
+  }
+
+  .toast-title {
+    font-weight: 700;
+    color: var(--text-rich);
+    margin-bottom: 0.25rem;
+  }
+
+  .toast-message {
+    font-size: 0.9rem;
+    color: var(--text-muted-rich);
+    line-height: 1.4;
+  }
+
+  .toast-close {
+    cursor: pointer;
+    color: var(--text-muted-rich);
+    transition: color 0.3s ease;
+  }
+
+  .toast-close:hover {
+    color: var(--text-rich);
+  }
+
+  /* Animations */
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .display-2 { font-size: 2.5rem; }
+    .my-6 { margin-top: 2rem !important; margin-bottom: 2rem !important; }
+    .py-6 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+    
+    .social-links-premium {
+      grid-template-columns: 1fr;
+    }
+    
+    .toast-premium {
+      right: 1rem;
+      left: 1rem;
+      max-width: none;
+    }
+    
+    .btn-premium-gradient {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+    }
+  }
+</style>
