@@ -1,20 +1,20 @@
 require("dotenv").config();
 
 const express = require("express");
-const mongoose = require("mongoose");
 const session = require("express-session");
 const flash = require("connect-flash");
 const methodOverride = require("method-override");
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
 const ejsMate = require("ejs-mate");
 const path = require("path");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 
-const User = require("./models/user.js");
+const { connectDB } = require("./config/database");
+const sessionConfig = require("./config/session");
+const helmetConfig = require("./config/security");
+const passport = require("./config/passport");
+
 const wrapAsync = require("./utils/wrapAsync");
-const ExpressError = require("./utils/ExpressError");
 const csrfProtection = require("./middleware/csrf");
 
 // Routers
@@ -28,24 +28,10 @@ const formStatsRouter = require("./routes/formStats.js");
 const app = express();
 
 // Security Middleware
-app.use(helmet({
-  contentSecurityPolicy: false // Allow external images
-}));
+app.use(helmet(helmetConfig));
 app.use(mongoSanitize());
 
 // Database Connection
-const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wanderlust";
-
-async function connectDB() {
-  try {
-    await mongoose.connect(MONGO_URL);
-    console.log("✅ MongoDB Connected");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    console.log("⚠️ Server will run without database functionality");
-  }
-}
-
 connectDB();
 
 // View Engine Setup
@@ -60,18 +46,6 @@ app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Session and Flash
-const sessionConfig = {
-  secret: process.env.SESSION_SECRET || "mysupersecretcode",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    expires: Date.now() + 7 * 24 * 3600000,
-    maxAge: 7 * 24 * 3600000
-  }
-};
 app.use(session(sessionConfig));
 app.use(csrfProtection);
 app.use(flash());
@@ -79,9 +53,6 @@ app.use(flash());
 // Passport Setup
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
 
 // Global Template Variables
 app.use((req, res, next) => {
