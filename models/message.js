@@ -1,33 +1,37 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose');
 
-const messageSchema = new Schema({
+const messageSchema = new mongoose.Schema({
   sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
   recipient: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
+  },
+  listing: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Listing'
   },
   content: {
     type: String,
     required: true,
     trim: true
   },
-  listing: {
-    type: Schema.Types.ObjectId,
-    ref: "Listing"
-  },
-  read: {
+  isRead: {
     type: Boolean,
     default: false
   },
-  readAt: Date
-}, {
-  timestamps: true
+  readAt: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-module.exports = mongoose.model("Message", messageSchema);
+messageSchema.index({ sender: 1, recipient: 1, createdAt: -1 });
+messageSchema.index({ recipient: 1, isRead: 1 });
+
+module.exports = mongoose.model('Message', messageSchema);
