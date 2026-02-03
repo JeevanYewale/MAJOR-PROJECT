@@ -22,6 +22,7 @@ const listingsRouter = require("./routes/listing.js");
 const reviewsRouter = require("./routes/review.js");
 const userRouter = require("./routes/users.js");
 const bookingRouter = require("./routes/booking.js");
+const formsRouter = require("./routes/forms.js");
 
 const app = express();
 
@@ -186,6 +187,7 @@ app.use("/users", userRouter);
 app.use("/listings", listingsRouter);
 app.use("/listings/:id/reviews", reviewsRouter);
 app.use("/bookings", bookingRouter);
+app.use("/forms", formsRouter);
 
 // Error Handling
 app.use((err, req, res, next) => {

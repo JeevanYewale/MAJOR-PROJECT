@@ -1,0 +1,52 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Form Submissions</h2>
+      
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% forms.forEach(form => { %>
+              <tr>
+                <td><%= form.name %></td>
+                <td><%= form.email %></td>
+                <td><%= form.subject %></td>
+                <td>
+                  <span class="badge bg-<%= form.status === 'new' ? 'warning' : form.status === 'read' ? 'info' : 'success' %>">
+                    <%= form.status %>
+                  </span>
+                </td>
+                <td><%= form.createdAt.toLocaleDateString() %></td>
+                <td>
+                  <a href="/forms/<%= form._id %>" class="btn btn-sm btn-info">View</a>
+                  <button class="btn btn-sm btn-danger" onclick="deleteForm('<%= form._id %>')">Delete</button>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function deleteForm(id) {
+    if (confirm('Are you sure?')) {
+      fetch(`/forms/${id}`, { method: 'DELETE' })
+        .then(() => location.reload());
+    }
+  }
+</script>
