@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha test/setup.js test/**/*.test.js",
+    "test:watch": "mocha test/setup.js test/**/*.test.js --watch",
     "init-db": "node init-db.js",
     "build": "echo 'No build step required'",
     "lint": "echo 'Linting not configured'",
@@ -74,7 +75,9 @@
     "socket.io": "^4.7.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "mocha": "^10.2.0",
+    "chai": "^4.3.10"
   },
   "optionalDependencies": {
     "@sendgrid/mail": "^8.1.0",
