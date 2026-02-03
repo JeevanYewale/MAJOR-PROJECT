@@ -1,0 +1,102 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container mt-5">
+  <h2>Form Analytics Dashboard</h2>
+  
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Total Submissions</h5>
+          <h2 id="totalForms">0</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>New Forms</h5>
+          <h2 id="newForms" class="text-warning">0</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Read Forms</h5>
+          <h2 id="readForms" class="text-info">0</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>Replied Forms</h5>
+          <h2 id="repliedForms" class="text-success">0</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Submissions by Day (Last 30 Days)</div>
+        <div class="card-body">
+          <canvas id="submissionsChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Top Subjects</div>
+        <div class="card-body">
+          <ul id="topSubjects" class="list-group"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  async function loadStats() {
+    const stats = await fetch('/form-stats/stats').then(r => r.json());
+    document.getElementById('totalForms').textContent = stats.total;
+    document.getElementById('newForms').textContent = stats.newForms;
+    document.getElementById('readForms').textContent = stats.readForms;
+    document.getElementById('repliedForms').textContent = stats.repliedForms;
+  }
+
+  async function loadSubmissionsByDay() {
+    const data = await fetch('/form-stats/submissions-by-day').then(r => r.json());
+    const ctx = document.getElementById('submissionsChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.map(d => d._id),
+        datasets: [{
+          label: 'Submissions',
+          data: data.map(d => d.count),
+          borderColor: '#007bff',
+          tension: 0.1
+        }]
+      }
+    });
+  }
+
+  async function loadTopSubjects() {
+    const data = await fetch('/form-stats/top-subjects').then(r => r.json());
+    const list = document.getElementById('topSubjects');
+    data.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between';
+      li.innerHTML = `<span>${item._id}</span><span class="badge bg-primary">${item.count}</span>`;
+      list.appendChild(li);
+    });
+  }
+
+  loadStats();
+  loadSubmissionsByDay();
+  loadTopSubjects();
+</script>

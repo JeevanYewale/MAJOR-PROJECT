@@ -3,11 +3,21 @@ const router = express.Router();
 const ContactForm = require('../models/contactForm');
 const { validateContactForm } = require('../middleware/formValidation');
 const wrapAsync = require('../utils/wrapAsync');
+const { sendFormConfirmation, sendFormNotification } = require('../utils/emailNotifications');
 
 // Submit contact form
 router.post('/submit', validateContactForm, wrapAsync(async (req, res) => {
   const form = new ContactForm(req.validatedData);
   await form.save();
+  
+  // Send emails
+  try {
+    await sendFormConfirmation(form.email, form.name);
+    await sendFormNotification(form);
+  } catch (err) {
+    console.error('Email error:', err);
+  }
+  
   res.status(201).json({ message: 'Form submitted successfully', formId: form._id });
 }));
 
@@ -51,6 +61,24 @@ router.put('/:id/status', wrapAsync(async (req, res) => {
 router.delete('/:id', wrapAsync(async (req, res) => {
   await ContactForm.findByIdAndDelete(req.params.id);
   res.json({ message: 'Form deleted' });
+}));
+
+// Export to CSV
+router.get('/export/csv', wrapAsync(async (req, res) => {
+  const FormExportService = require('../utils/formExportService');
+  const csv = await FormExportService.exportToCSV();
+  res.header('Content-Type', 'text/csv');
+  res.header('Content-Disposition', 'attachment; filename=forms.csv');
+  res.send(csv);
+}));
+
+// Export to JSON
+router.get('/export/json', wrapAsync(async (req, res) => {
+  const FormExportService = require('../utils/formExportService');
+  const json = await FormExportService.exportToJSON();
+  res.header('Content-Type', 'application/json');
+  res.header('Content-Disposition', 'attachment; filename=forms.json');
+  res.send(json);
 }));
 
 module.exports = router;
