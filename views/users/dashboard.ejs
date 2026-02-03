@@ -1,0 +1,274 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container my-5">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2>Welcome back, <%= user.displayName %>!</h2>
+        <p class="text-muted">Manage your listings, bookings, and account settings</p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <a href="/listings/new" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i> Add New Listing
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary">
+          <i class="fas fa-home"></i>
+        </div>
+        <div class="stat-content">
+          <h3><%= stats.totalListings %></h3>
+          <p>Total Listings</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="stat-content">
+          <h3><%= stats.totalBookings %></h3>
+          <p>Total Bookings</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning">
+          <i class="fas fa-rupee-sign"></i>
+        </div>
+        <div class="stat-content">
+          <h3>₹<%= stats.totalRevenue.toLocaleString('en-IN') %></h3>
+          <p>Total Revenue</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-content">
+          <h3><%= stats.averageRating %></h3>
+          <p>Average Rating</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Listings -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Your Listings</h5>
+          <a href="/listings" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          <% if (listings.length > 0) { %>
+            <div class="row">
+              <% listings.forEach(listing => { %>
+                <div class="col-md-6 mb-3">
+                  <div class="listing-card-small">
+                    <img src="<%= listing.image?.url || '/images/default.jpg' %>" 
+                         alt="<%= listing.title %>" class="listing-image-small">
+                    <div class="listing-content-small">
+                      <h6><%= listing.title %></h6>
+                      <p class="text-muted small">
+                        <i class="fas fa-map-marker-alt"></i> 
+                        <%= listing.location %>, <%= listing.country %>
+                      </p>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <strong>₹<%= listing.price.toLocaleString('en-IN') %>/night</strong>
+                        <div class="btn-group btn-group-sm">
+                          <a href="/listings/<%= listing._id %>" class="btn btn-outline-primary btn-sm">View</a>
+                          <a href="/listings/<%= listing._id %>/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-4">
+              <i class="fas fa-home fa-3x text-muted mb-3"></i>
+              <h5>No listings yet</h5>
+              <p class="text-muted">Start earning by adding your first listing!</p>
+              <a href="/listings/new" class="btn btn-primary">Add Your First Listing</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Profile -->
+    <div class="col-md-4">
+      <!-- Profile Summary -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0">Profile Summary</h6>
+        </div>
+        <div class="card-body text-center">
+          <img src="<%= user.avatar?.url || '/images/default-avatar.jpg' %>" 
+               alt="<%= user.displayName %>" 
+               class="rounded-circle mb-2" 
+               width="80" height="80">
+          <h6><%= user.fullName || user.username %></h6>
+          <p class="text-muted small"><%= user.email %></p>
+          
+          <div class="profile-completion mb-3">
+            <small class="text-muted">Profile Completion</small>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar" style="width: <%= user.profileCompletion || 60 %>%"></div>
+            </div>
+            <small class="text-muted"><%= user.profileCompletion || 60 %>% complete</small>
+          </div>
+          
+          <a href="/users/profile" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">Quick Actions</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          <a href="/listings/new" class="list-group-item list-group-item-action">
+            <i class="fas fa-plus text-primary me-2"></i> Add New Listing
+          </a>
+          <a href="/bookings" class="list-group-item list-group-item-action">
+            <i class="fas fa-calendar text-success me-2"></i> View Bookings
+          </a>
+          <a href="/users/favorites" class="list-group-item list-group-item-action">
+            <i class="fas fa-heart text-danger me-2"></i> My Favorites
+          </a>
+          <a href="/users/messages" class="list-group-item list-group-item-action">
+            <i class="fas fa-envelope text-info me-2"></i> Messages
+          </a>
+          <a href="/users/profile" class="list-group-item list-group-item-action">
+            <i class="fas fa-user text-warning me-2"></i> Account Settings
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.dashboard-header h2 {
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.stat-content h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 12px;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.listing-card-small {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.listing-card-small:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.listing-image-small {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.listing-content-small {
+  padding: 1rem;
+}
+
+.listing-content-small h6 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.profile-completion .progress {
+  margin: 0.5rem 0;
+}
+
+.list-group-item-action:hover {
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    margin-bottom: 1rem;
+  }
+  
+  .dashboard-header .row {
+    text-align: center;
+  }
+  
+  .dashboard-header .col-md-4 {
+    margin-top: 1rem;
+  }
+}
+</style>

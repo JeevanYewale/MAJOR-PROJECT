@@ -1,6 +1,10 @@
 const Listing = require("./models/listing"); // Capital 'L' for Listing
 
 module.exports.isLoggedIn = (req, res, next) => {
+    console.log("🔐 Checking authentication for:", req.originalUrl);
+    console.log("👤 User authenticated:", req.isAuthenticated());
+    console.log("👤 User:", req.user ? req.user.username : 'None');
+    
     if (!req.isAuthenticated()) {
         req.session.redirectUrl = req.originalUrl;
         req.flash("error", "You must be logged in to create listing!");

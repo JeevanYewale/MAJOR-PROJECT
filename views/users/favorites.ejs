@@ -1,0 +1,344 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container my-5">
+  <!-- Header -->
+  <div class="favorites-header mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2><i class="fas fa-heart text-danger me-2"></i> My Favorites</h2>
+        <p class="text-muted">
+          <% if (favorites.length > 0) { %>
+            You have <%= favorites.length %> favorite listing<%= favorites.length !== 1 ? 's' : '' %>
+          <% } else { %>
+            You haven't saved any favorites yet
+          <% } %>
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <a href="/listings" class="btn btn-primary">
+          <i class="fas fa-search me-2"></i> Browse Listings
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Favorites Grid -->
+  <% if (favorites.length > 0) { %>
+    <div class="favorites-grid">
+      <% favorites.forEach(listing => { %>
+        <div class="listing-card">
+          <div class="listing-image-container">
+            <img src="<%= listing.image?.url || '/images/default.jpg' %>" 
+                 alt="<%= listing.title %>" 
+                 class="listing-image"
+                 loading="lazy">
+            <button class="favorite-btn active" data-listing-id="<%= listing._id %>">
+              <i class="fas fa-heart"></i>
+            </button>
+            <% if (listing.featured) { %>
+              <span class="featured-badge">Featured</span>
+            <% } %>
+          </div>
+          
+          <div class="listing-content">
+            <div class="listing-header">
+              <div class="listing-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <%= listing.location %>, <%= listing.country %>
+              </div>
+              <div class="listing-rating">
+                <i class="fas fa-star"></i>
+                <span><%= listing.averageRating || 'New' %></span>
+                <% if (listing.reviewCount > 0) { %>
+                  <small>(<%= listing.reviewCount %>)</small>
+                <% } %>
+              </div>
+            </div>
+            
+            <h3 class="listing-title"><%= listing.title %></h3>
+            
+            <div class="listing-details">
+              <% if (listing.maxGuests) { %>
+                <span><%= listing.maxGuests %> guests</span>
+              <% } %>
+              <% if (listing.bedrooms !== undefined) { %>
+                <span><%= listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed` %></span>
+              <% } %>
+              <% if (listing.bathrooms) { %>
+                <span><%= listing.bathrooms %> bath</span>
+              <% } %>
+            </div>
+            
+            <div class="listing-price">
+              <strong>₹<%= listing.price.toLocaleString('en-IN') %></strong>
+              <span class="price-period">night</span>
+            </div>
+            
+            <div class="listing-actions">
+              <a href="/listings/<%= listing._id %>" class="btn btn-primary">View Details</a>
+              <button class="btn btn-outline-danger remove-favorite" data-listing-id="<%= listing._id %>">
+                <i class="fas fa-heart-broken me-1"></i> Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="empty-favorites">
+      <div class="text-center py-5">
+        <i class="far fa-heart fa-5x text-muted mb-4"></i>
+        <h3>No favorites yet</h3>
+        <p class="text-muted mb-4">
+          Start exploring and save your favorite places to stay!<br>
+          Click the heart icon on any listing to add it to your favorites.
+        </p>
+        <a href="/listings" class="btn btn-primary btn-lg">
+          <i class="fas fa-search me-2"></i> Explore Listings
+        </a>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<style>
+.favorites-header h2 {
+  font-weight: 700;
+  color: #333;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.listing-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.listing-image-container {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+
+.listing-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.listing-card:hover .listing-image {
+  transform: scale(1.05);
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.favorite-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.favorite-btn.active i {
+  color: #dc3545;
+}
+
+.featured-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.listing-content {
+  padding: 1.5rem;
+}
+
+.listing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.listing-location {
+  color: #666;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.listing-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.listing-rating i {
+  color: #ffc107;
+}
+
+.listing-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #333;
+  line-height: 1.3;
+}
+
+.listing-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.listing-price {
+  margin-bottom: 1rem;
+}
+
+.listing-price strong {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.price-period {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.listing-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.listing-actions .btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.empty-favorites {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 3rem;
+  margin: 2rem 0;
+}
+
+.remove-favorite {
+  transition: all 0.2s ease;
+}
+
+.remove-favorite:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .favorites-header .row {
+    text-align: center;
+  }
+  
+  .favorites-header .col-md-4 {
+    margin-top: 1rem;
+  }
+  
+  .listing-actions {
+    flex-direction: column;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Favorite toggle functionality
+  document.querySelectorAll('.favorite-btn, .remove-favorite').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const listingId = this.dataset.listingId;
+      const listingCard = this.closest('.listing-card');
+      
+      try {
+        const response = await fetch(`/listings/${listingId}/favorite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success) {
+            // Remove the card from favorites page
+            listingCard.style.opacity = '0';
+            listingCard.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+              listingCard.remove();
+              
+              // Check if no more favorites
+              const remainingCards = document.querySelectorAll('.listing-card');
+              if (remainingCards.length === 0) {
+                location.reload(); // Reload to show empty state
+              }
+            }, 300);
+            
+            // Show success message
+            if (window.TravelStay && window.TravelStay.showAlert) {
+              window.TravelStay.showAlert('Removed from favorites!', 'success');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error removing favorite:', error);
+        if (window.TravelStay && window.TravelStay.showAlert) {
+          window.TravelStay.showAlert('Failed to remove favorite. Please try again.', 'error');
+        }
+      }
+    });
+  });
+});
+
+// Global user data for JavaScript
+window.currentUser = <%= currentUser ? JSON.stringify({id: currentUser._id}) : 'null' %>;
+</script>

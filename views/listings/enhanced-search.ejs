@@ -1,0 +1,387 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="search-hero">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="search-card">
+          <h2 class="search-title">Find your perfect stay</h2>
+          <form action="/search" method="GET" class="search-form">
+            <div class="search-grid">
+              <div class="search-field">
+                <label>Where</label>
+                <input type="text" name="location" placeholder="Search destinations" 
+                       value="<%= searchParams.location || '' %>" class="form-control">
+              </div>
+              
+              <div class="search-field">
+                <label>Check-in</label>
+                <input type="date" name="checkIn" value="<%= searchParams.checkIn || '' %>" 
+                       class="form-control" min="<%= new Date().toISOString().split('T')[0] %>">
+              </div>
+              
+              <div class="search-field">
+                <label>Check-out</label>
+                <input type="date" name="checkOut" value="<%= searchParams.checkOut || '' %>" 
+                       class="form-control" min="<%= new Date().toISOString().split('T')[0] %>">
+              </div>
+              
+              <div class="search-field">
+                <label>Guests</label>
+                <select name="guests" class="form-control">
+                  <option value="">Any</option>
+                  <% for(let i = 1; i <= 10; i++) { %>
+                    <option value="<%= i %>" <%= searchParams.guests == i ? 'selected' : '' %>>
+                      <%= i %> guest<%= i > 1 ? 's' : '' %>
+                    </option>
+                  <% } %>
+                </select>
+              </div>
+              
+              <div class="search-button">
+                <button type="submit" class="btn-search">
+                  <i class="fas fa-search"></i>
+                  Search
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Categories Section -->
+<div class="container my-5">
+  <h3 class="mb-4">Browse by category</h3>
+  <div class="categories-grid">
+    <a href="/search?category=beachfront" class="category-card">
+      <i class="fas fa-umbrella-beach"></i>
+      <span>Beachfront</span>
+    </a>
+    <a href="/search?category=cabins" class="category-card">
+      <i class="fas fa-home"></i>
+      <span>Cabins</span>
+    </a>
+    <a href="/search?category=trending" class="category-card">
+      <i class="fas fa-fire"></i>
+      <span>Trending</span>
+    </a>
+    <a href="/search?category=city" class="category-card">
+      <i class="fas fa-city"></i>
+      <span>City</span>
+    </a>
+    <a href="/search?category=mountains" class="category-card">
+      <i class="fas fa-mountain"></i>
+      <span>Mountains</span>
+    </a>
+    <a href="/search?category=pools" class="category-card">
+      <i class="fas fa-swimming-pool"></i>
+      <span>Amazing pools</span>
+    </a>
+  </div>
+</div>
+
+<!-- Results Section -->
+<% if (typeof listings !== 'undefined' && listings.length > 0) { %>
+<div class="container">
+  <div class="results-header">
+    <h4><%= totalResults %> stays found</h4>
+    <div class="filters-toggle">
+      <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#filtersModal">
+        <i class="fas fa-sliders-h me-2"></i>Filters
+      </button>
+    </div>
+  </div>
+  
+  <div class="row">
+    <% listings.forEach(listing => { %>
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="listing-card">
+          <div class="listing-image">
+            <img src="<%= listing.image?.url || '/images/default.jpg' %>" alt="<%= listing.title %>">
+            <button class="favorite-btn" data-listing-id="<%= listing._id %>">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
+          <div class="listing-content">
+            <div class="listing-location"><%= listing.location %>, <%= listing.country %></div>
+            <h6 class="listing-title"><%= listing.title %></h6>
+            <div class="listing-rating">
+              <i class="fas fa-star"></i>
+              <span>4.8</span>
+            </div>
+            <div class="listing-price">
+              <strong>₹<%= listing.price.toLocaleString('en-IN') %></strong> night
+            </div>
+            <a href="/listings/<%= listing._id %>" class="btn btn-primary btn-sm mt-2">View Details</a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+<% } %>
+
+<!-- Filters Modal -->
+<div class="modal fade" id="filtersModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Filters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/search" method="GET">
+          <div class="mb-3">
+            <label class="form-label">Price range</label>
+            <div class="row">
+              <div class="col-6">
+                <input type="number" name="minPrice" placeholder="Min price" class="form-control">
+              </div>
+              <div class="col-6">
+                <input type="number" name="maxPrice" placeholder="Max price" class="form-control">
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Property type</label>
+            <select name="category" class="form-control">
+              <option value="">Any type</option>
+              <option value="apartment">Apartment</option>
+              <option value="house">House</option>
+              <option value="villa">Villa</option>
+              <option value="hotel">Hotel</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Amenities</label>
+            <div class="amenities-grid">
+              <label class="amenity-checkbox">
+                <input type="checkbox" name="amenities" value="wifi">
+                <span>WiFi</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" name="amenities" value="parking">
+                <span>Free parking</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" name="amenities" value="pool">
+                <span>Pool</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" name="amenities" value="kitchen">
+                <span>Kitchen</span>
+              </label>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.search-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 4rem 0;
+  margin-bottom: 2rem;
+}
+
+.search-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.search-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+  font-weight: 700;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.search-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.btn-search {
+  background: #ff385c;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.category-card:hover {
+  border-color: #ff385c;
+  color: #ff385c;
+  text-decoration: none;
+}
+
+.category-card i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.listing-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.listing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.listing-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.listing-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listing-content {
+  padding: 1rem;
+}
+
+.listing-location {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.listing-title {
+  margin: 0.5rem 0;
+  font-weight: 600;
+}
+
+.listing-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.listing-rating i {
+  color: #ffc107;
+}
+
+.listing-price {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.amenities-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.amenity-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Favorite functionality
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const icon = this.querySelector('i');
+      icon.classList.toggle('far');
+      icon.classList.toggle('fas');
+      icon.style.color = icon.classList.contains('fas') ? '#ff385c' : '';
+    });
+  });
+  
+  // Date validation
+  const checkinInput = document.querySelector('input[name="checkIn"]');
+  const checkoutInput = document.querySelector('input[name="checkOut"]');
+  
+  if (checkinInput && checkoutInput) {
+    checkinInput.addEventListener('change', function() {
+      checkoutInput.min = this.value;
+    });
+  }
+});
+</script>

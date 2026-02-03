@@ -1,0 +1,696 @@
+<% showNavbar = true %>
+<% layout('layouts/boilerplate') %>
+
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="hero-content">
+    <h1 class="hero-title">Find your next adventure</h1>
+    <p class="hero-subtitle">Discover amazing places to stay around the world</p>
+    
+    <!-- Enhanced Search Bar -->
+    <div class="hero-search">
+      <form action="/search" method="GET" class="search-form">
+        <div class="search-inputs">
+          <div class="search-input-group">
+            <label>Where</label>
+            <input type="text" name="location" placeholder="Search destinations" class="search-input">
+          </div>
+          <div class="search-input-group">
+            <label>Check in</label>
+            <input type="date" name="checkIn" class="search-input" min="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
+          <div class="search-input-group">
+            <label>Check out</label>
+            <input type="date" name="checkOut" class="search-input" min="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
+          <div class="search-input-group">
+            <label>Guests</label>
+            <select name="guests" class="search-input">
+              <option value="">Add guests</option>
+              <% for(let i = 1; i <= 10; i++) { %>
+                <option value="<%= i %>"><%= i %> guest<%= i > 1 ? 's' : '' %></option>
+              <% } %>
+            </select>
+          </div>
+          <button type="submit" class="search-btn">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Categories Section -->
+<div class="container my-5">
+  <div class="categories-section">
+    <div class="categories-scroll">
+      <a href="/search?category=beachfront" class="category-item">
+        <i class="fas fa-umbrella-beach"></i>
+        <span>Beachfront</span>
+      </a>
+      <a href="/search?category=cabins" class="category-item">
+        <i class="fas fa-home"></i>
+        <span>Cabins</span>
+      </a>
+      <a href="/search?category=trending" class="category-item">
+        <i class="fas fa-fire"></i>
+        <span>Trending</span>
+      </a>
+      <a href="/search?category=city" class="category-item">
+        <i class="fas fa-city"></i>
+        <span>City</span>
+      </a>
+      <a href="/search?category=mountains" class="category-item">
+        <i class="fas fa-mountain"></i>
+        <span>Mountains</span>
+      </a>
+      <a href="/search?category=pools" class="category-item">
+        <i class="fas fa-swimming-pool"></i>
+        <span>Amazing pools</span>
+      </a>
+      <a href="/search?category=countryside" class="category-item">
+        <i class="fas fa-tree"></i>
+        <span>Countryside</span>
+      </a>
+      <a href="/search?category=luxury" class="category-item">
+        <i class="fas fa-crown"></i>
+        <span>Luxury</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Listings Grid -->
+<div class="container">
+  <div class="listings-header">
+    <h2>Explore stays</h2>
+    <div class="view-toggle">
+      <button class="view-btn active" data-view="grid">
+        <i class="fas fa-th-large"></i>
+      </button>
+      <button class="view-btn" data-view="list">
+        <i class="fas fa-list"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="listings-grid" id="listingsContainer">
+    <% allListings.forEach(listing => { %>
+      <div class="listing-card">
+        <div class="listing-image-container">
+          <img src="<%= listing.image?.url || 'https://images.unsplash.com/photo-1625505826533-5e598cdd06d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60' %>" 
+               alt="<%= listing.title %>" 
+               class="listing-image"
+               loading="lazy"
+               onerror="this.src='https://images.unsplash.com/photo-1625505826533-5e598cdd06d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60'">
+          <button class="favorite-btn" data-listing-id="<%= listing._id %>">
+            <i class="far fa-heart"></i>
+          </button>
+          <% if (listing.featured) { %>
+            <span class="featured-badge">Featured</span>
+          <% } %>
+        </div>
+        
+        <div class="listing-content">
+          <div class="listing-header">
+            <div class="listing-location">
+              <i class="fas fa-map-marker-alt"></i>
+              <%= listing.location %>, <%= listing.country %>
+            </div>
+            <div class="listing-rating">
+              <i class="fas fa-star"></i>
+              <span><%= listing.averageRating || 'New' %></span>
+              <% if (listing.reviewCount > 0) { %>
+                <small>(<%= listing.reviewCount %>)</small>
+              <% } %>
+            </div>
+          </div>
+          
+          <h3 class="listing-title"><%= listing.title %></h3>
+          
+          <div class="listing-details">
+            <% if (listing.maxGuests) { %>
+              <span><%= listing.maxGuests %> guests</span>
+            <% } %>
+            <% if (listing.bedrooms !== undefined) { %>
+              <span><%= listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed` %></span>
+            <% } %>
+            <% if (listing.bathrooms) { %>
+              <span><%= listing.bathrooms %> bath</span>
+            <% } %>
+          </div>
+          
+          <div class="listing-price">
+            <strong>₹<%= listing.price.toLocaleString('en-IN') %></strong>
+            <span class="price-period">night</span>
+          </div>
+          
+          <div class="listing-actions">
+            <a href="/listings/<%= listing._id %>" class="btn btn-primary">View Details</a>
+            <% if (currentUser && listing.owner && currentUser._id.toString() === listing.owner._id.toString()) { %>
+              <a href="/listings/<%= listing._id %>/edit" class="btn btn-outline-secondary">Edit</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+  
+  <!-- Load More Button -->
+  <div class="text-center mt-4">
+    <button class="btn btn-outline-primary" id="loadMoreBtn">
+      Load more listings
+    </button>
+  </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section">
+  <div class="container">
+    <h2 class="text-center mb-5">Why choose TravelStay?</h2>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h4>Secure Booking</h4>
+          <p>Your payments and personal information are always protected with our advanced security measures.</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-headset"></i>
+          </div>
+          <h4>24/7 Support</h4>
+          <p>Get help whenever you need it with our round-the-clock customer support team.</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-medal"></i>
+          </div>
+          <h4>Quality Guaranteed</h4>
+          <p>Every listing is verified and reviewed to ensure you have the best possible experience.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.7), rgba(40, 167, 69, 0.7)), 
+              url('/images/about-journey.jpeg') center/cover;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  color: white;
+  text-align: center;
+  position: relative;
+}
+
+.hero-content {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  margin-bottom: 3rem;
+  opacity: 0.95;
+}
+
+.hero-search {
+  background: white;
+  border-radius: 50px;
+  padding: 8px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.search-inputs {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 1px;
+  align-items: center;
+}
+
+.search-input-group {
+  padding: 1rem;
+  border-radius: 25px;
+  transition: background 0.2s ease;
+}
+
+.search-input-group:hover {
+  background: #f8f9fa;
+}
+
+.search-input-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.search-input {
+  border: none;
+  background: none;
+  width: 100%;
+  font-size: 0.95rem;
+  color: #333;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Categories */
+.categories-section {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+.categories-scroll {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #666;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  border: 2px solid transparent;
+}
+
+.category-item:hover,
+.category-item.active {
+  color: #007bff;
+  border-color: #007bff;
+  background: #e3f2fd;
+  text-decoration: none;
+}
+
+.category-item i {
+  font-size: 1.5rem;
+}
+
+.category-item span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Listings */
+.listings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.listings-header h2 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-btn {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.view-btn.active,
+.view-btn:hover {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.listing-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.listing-image-container {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+
+.listing-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.listing-card:hover .listing-image {
+  transform: scale(1.05);
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.favorite-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.favorite-btn.active i {
+  color: #007bff;
+}
+
+.featured-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.listing-content {
+  padding: 1.5rem;
+}
+
+.listing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.listing-location {
+  color: #666;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.listing-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.listing-rating i {
+  color: #ffc107;
+}
+
+.listing-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #333;
+  line-height: 1.3;
+}
+
+.listing-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.listing-price {
+  margin-bottom: 1rem;
+}
+
+.listing-price strong {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.price-period {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.listing-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.listing-actions .btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* Features Section */
+.features-section {
+  background: #f8f9fa;
+  padding: 4rem 0;
+  margin-top: 4rem;
+}
+
+.feature-card {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  height: 100%;
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #007bff, #28a745);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: white;
+  font-size: 2rem;
+}
+
+.feature-card h4 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.feature-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .search-inputs {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .search-input-group {
+    border-bottom: 1px solid #eee;
+  }
+  
+  .search-input-group:last-of-type {
+    border-bottom: none;
+  }
+  
+  .search-btn {
+    width: 100%;
+    border-radius: 25px;
+    height: 48px;
+    margin: 0.5rem;
+  }
+  
+  .listings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .listings-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Favorite functionality
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      
+      if (!window.currentUser) {
+        alert('Please log in to save favorites');
+        return;
+      }
+      
+      const listingId = this.dataset.listingId;
+      const icon = this.querySelector('i');
+      
+      try {
+        const response = await fetch(`/listings/${listingId}/favorite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          icon.classList.toggle('far');
+          icon.classList.toggle('fas');
+          this.classList.toggle('active');
+        }
+      } catch (error) {
+        console.error('Error toggling favorite:', error);
+      }
+    });
+  });
+  
+  // View toggle
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      const view = this.dataset.view;
+      const container = document.getElementById('listingsContainer');
+      
+      if (view === 'list') {
+        container.classList.add('list-view');
+      } else {
+        container.classList.remove('list-view');
+      }
+    });
+  });
+  
+  // Load more functionality
+  document.getElementById('loadMoreBtn').addEventListener('click', function() {
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+    
+    // Simulate loading
+    setTimeout(() => {
+      this.innerHTML = 'Load more listings';
+      // In real app, this would load more listings via AJAX
+    }, 1000);
+  });
+  
+  // Date validation
+  const checkinInput = document.querySelector('input[name="checkIn"]');
+  const checkoutInput = document.querySelector('input[name="checkOut"]');
+  
+  if (checkinInput && checkoutInput) {
+    checkinInput.addEventListener('change', function() {
+      checkoutInput.min = this.value;
+    });
+  }
+  
+  // Category active state
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get('category');
+  if (category) {
+    document.querySelectorAll('.category-item').forEach(item => {
+      if (item.href.includes(`category=${category}`)) {
+        item.classList.add('active');
+      }
+    });
+  }
+});
+
+// Global user data for JavaScript
+window.currentUser = <%= currentUser ? JSON.stringify({id: currentUser._id}) : 'null' %>;
+</script>

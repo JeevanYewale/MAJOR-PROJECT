@@ -1,0 +1,206 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container my-5">
+  <div class="row">
+    <!-- Profile Sidebar -->
+    <div class="col-md-4">
+      <div class="card profile-card">
+        <div class="card-body text-center">
+          <div class="profile-avatar mb-3">
+            <img src="<%= user.avatar?.url || '/images/default-avatar.jpg' %>" 
+                 alt="<%= user.displayName %>" 
+                 class="rounded-circle" 
+                 width="120" height="120">
+          </div>
+          <h4><%= user.fullName || user.username %></h4>
+          <p class="text-muted"><%= user.email %></p>
+          
+          <div class="profile-stats mt-3">
+            <div class="row text-center">
+              <div class="col-4">
+                <strong><%= user.listings?.length || 0 %></strong>
+                <small class="d-block text-muted">Listings</small>
+              </div>
+              <div class="col-4">
+                <strong><%= user.reviews?.length || 0 %></strong>
+                <small class="d-block text-muted">Reviews</small>
+              </div>
+              <div class="col-4">
+                <strong><%= user.favorites?.length || 0 %></strong>
+                <small class="d-block text-muted">Favorites</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-badges mt-3">
+            <% if (user.verified) { %>
+              <span class="badge bg-success me-1">
+                <i class="fas fa-check-circle"></i> Verified
+              </span>
+            <% } %>
+            <% if (user.superhost) { %>
+              <span class="badge bg-warning">
+                <i class="fas fa-star"></i> Superhost
+              </span>
+            <% } %>
+            <% if (user.role === 'host') { %>
+              <span class="badge bg-primary">
+                <i class="fas fa-home"></i> Host
+              </span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h6 class="mb-0">Quick Actions</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          <a href="/users/dashboard" class="list-group-item list-group-item-action">
+            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+          </a>
+          <a href="/listings/new" class="list-group-item list-group-item-action">
+            <i class="fas fa-plus me-2"></i> Add Listing
+          </a>
+          <a href="/bookings" class="list-group-item list-group-item-action">
+            <i class="fas fa-calendar me-2"></i> My Bookings
+          </a>
+          <a href="/users/favorites" class="list-group-item list-group-item-action">
+            <i class="fas fa-heart me-2"></i> Favorites
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Profile Content -->
+    <div class="col-md-8">
+      <!-- Edit Profile Form -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Edit Profile</h5>
+        </div>
+        <div class="card-body">
+          <form action="/users/profile" method="POST">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" name="firstName" class="form-control" 
+                       value="<%= user.firstName || '' %>" placeholder="Enter first name">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="lastName" class="form-control" 
+                       value="<%= user.lastName || '' %>" placeholder="Enter last name">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <input type="tel" name="phone" class="form-control" 
+                     value="<%= user.phone || '' %>" placeholder="Enter phone number">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Bio</label>
+              <textarea name="bio" class="form-control" rows="4" 
+                        placeholder="Tell us about yourself..."><%= user.bio || '' %></textarea>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">City</label>
+                <input type="text" name="city" class="form-control" 
+                       value="<%= user.location?.city || '' %>" placeholder="City">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">State</label>
+                <input type="text" name="state" class="form-control" 
+                       value="<%= user.location?.state || '' %>" placeholder="State">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Country</label>
+                <input type="text" name="country" class="form-control" 
+                       value="<%= user.location?.country || '' %>" placeholder="Country">
+              </div>
+            </div>
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i> Update Profile
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Account Information -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h6 class="mb-0">Account Information</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <strong>Username:</strong> <%= user.username %>
+            </div>
+            <div class="col-sm-6">
+              <strong>Email:</strong> <%= user.email %>
+            </div>
+            <div class="col-sm-6 mt-2">
+              <strong>Member since:</strong> <%= new Date(user.joinDate || user.createdAt).toLocaleDateString() %>
+            </div>
+            <div class="col-sm-6 mt-2">
+              <strong>Last login:</strong> 
+              <%= user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never' %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.profile-card {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.profile-avatar img {
+  border: 4px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.profile-stats {
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.profile-badges .badge {
+  font-size: 0.75rem;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 12px;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.list-group-item-action:hover {
+  background-color: #f8f9fa;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>

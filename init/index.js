@@ -2,12 +2,13 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const Listing = require("./models/listing.js");
-const Contact = require("./models/contact.js");
+const Listing = require("../models/listing.js");
+const Contact = require("../models/contact.js");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const wrapAsync = require("./utils/wrapAsync");
+const wrapAsync = require("../utils/wrapAsync");
+const initData = require("./data.js");
 
 // ------------------- View Engine Setup -------------------
 app.engine("ejs", ejsMate);
@@ -21,10 +22,27 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ------------------- MongoDB Connection -------------------
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
-mongoose
-  .connect(MONGO_URL)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ Mongo connection error:", err));
+
+async function initDB() {
+  await mongoose.connect(MONGO_URL);
+  console.log("✅ MongoDB Connected");
+  
+  // Clear existing data
+  await Listing.deleteMany({});
+  console.log("🗑️ Cleared existing listings");
+  
+  // Insert sample data
+  await Listing.insertMany(initData.data);
+  console.log("📦 Sample data inserted");
+  
+  console.log("🎉 Database initialized successfully!");
+  process.exit(0);
+}
+
+initDB().catch((err) => {
+  console.error("❌ Database initialization error:", err);
+  process.exit(1);
+});
 
 // ------------------- Helper: Normalize Image -------------------
 function normalizeImageInput(payloadImage, payloadImageUrl, existingImage) {

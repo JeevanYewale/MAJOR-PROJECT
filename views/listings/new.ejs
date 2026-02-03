@@ -210,66 +210,30 @@
       </div>
     </div>
 
-    <!-- Host Profile (only show if user needs to complete profile) -->
-    <% if (needsHostProfile) { %>
+    <!-- Owner Photo Upload -->
     <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
       <h3 class="section-title mb-3">
-        <i class="fas fa-user-circle me-2"></i>Complete Your Host Profile
+        <i class="fas fa-user-circle me-2"></i>Your Profile Photo
       </h3>
-      <p class="text-muted mb-3">Help guests get to know you better by completing your host profile:</p>
+      <p class="text-muted mb-3">Add a profile photo so guests can see who they're booking with:</p>
       
       <div class="row">
-        <div class="col-md-6 mb-3">
-          <label for="firstName" class="form-label">First Name</label>
-          <input id="firstName" name="host[firstName]" type="text" class="form-control" 
-                 value="<%= currentUser.firstName || '' %>" maxlength="50" />
+        <div class="col-md-6">
+          <label for="ownerPhoto" class="form-label">Upload your photo</label>
+          <input id="ownerPhoto" name="owner[photo]" type="file" class="form-control" accept="image/*" />
+          <small class="text-muted">Upload a clear photo of yourself for your profile.</small>
         </div>
-        <div class="col-md-6 mb-3">
-          <label for="lastName" class="form-label">Last Name</label>
-          <input id="lastName" name="host[lastName]" type="text" class="form-control" 
-                 value="<%= currentUser.lastName || '' %>" maxlength="50" />
-        </div>
-      </div>
-      
-      <div class="mb-3">
-        <label for="hostBio" class="form-label">About You</label>
-        <textarea id="hostBio" name="host[bio]" class="form-control" rows="3" maxlength="500"
-                  placeholder="Tell guests about yourself, your interests, and what you love about hosting..."><%= currentUser.bio || '' %></textarea>
-        <div class="form-text">
-          <span id="bio-count">0</span>/500 characters
-        </div>
-      </div>
-      
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label for="languages" class="form-label">Languages You Speak</label>
-          <div class="languages-checkboxes">
-            <% const commonLanguages = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Mandarin', 'Japanese', 'Arabic']; %>
-            <% commonLanguages.forEach(lang => { %>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" id="lang-<%= lang.toLowerCase() %>" 
-                       name="host[languages]" value="<%= lang %>" 
-                       <%= (currentUser.languages && currentUser.languages.includes(lang)) ? 'checked' : '' %> />
-                <label class="form-check-label" for="lang-<%= lang.toLowerCase() %>"><%= lang %></label>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-        
-        <div class="col-md-6 mb-3">
-          <label for="responseTime" class="form-label">Response Time</label>
-          <select id="responseTime" name="host[responseTime]" class="form-control">
-            <option value="within an hour" <%= (currentUser.responseTime === 'within an hour') ? 'selected' : '' %>>Within an hour</option>
-            <option value="within a few hours" <%= (currentUser.responseTime === 'within a few hours') ? 'selected' : '' %>>Within a few hours</option>
-            <option value="within a day" <%= (currentUser.responseTime === 'within a day') ? 'selected' : '' %>>Within a day</option>
-            <option value="a few days or more" <%= (currentUser.responseTime === 'a few days or more') ? 'selected' : '' %>>A few days or more</option>
-          </select>
+        <div class="col-md-6 text-center">
+          <img id="ownerPreview" src="<%= currentUser.avatar?.url || '/images/default-avatar.jpg' %>" 
+               class="preview-img img-fluid mt-2 rounded-circle" 
+               alt="Owner preview" 
+               style="max-width:150px; height:150px; object-fit:cover; border: 2px dashed #ddd;" />
         </div>
       </div>
     </div>
-    <% } %>
 
-     <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+    <!-- Host Information -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
       <h3 class="section-title mb-3">
         <i class="fas fa-user-circle me-2"></i>Host Information
       </h3>
@@ -278,7 +242,7 @@
       <div class="mb-3">
         <label for="hostName" class="form-label">Full Name *</label>
         <input id="hostName" name="host[name]" type="text" class="form-control" 
-               value="<%= currentUser.name || '' %>" maxlength="100" required />
+               value="<%= currentUser.fullName || currentUser.username || '' %>" maxlength="100" required />
       </div>
       
       <div class="mb-3">
@@ -310,11 +274,90 @@
           <label for="responseTime" class="form-label">Response Time *</label>
           <select id="responseTime" name="host[responseTime]" class="form-control" required>
             <option value="">Select</option>
-            <option value="within an hour" <%= (currentUser.responseTime === 'within an hour') ? 'selected' : '' %>>Within an hour</option>
-            <option value="within a few hours" <%= (currentUser.responseTime === 'within a few hours') ? 'selected' : '' %>>Within a few hours</option>
-            <option value="within a day" <%= (currentUser.responseTime === 'within a day') ? 'selected' : '' %>>Within a day</option>
-            <option value="a few days or more" <%= (currentUser.responseTime === 'a few days or more') ? 'selected' : '' %>>A few days or more</option>
+            <option value="within an hour" <%= (currentUser.hostProfile?.responseTime === 'within an hour') ? 'selected' : '' %>>Within an hour</option>
+            <option value="within a few hours" <%= (currentUser.hostProfile?.responseTime === 'within a few hours') ? 'selected' : '' %>>Within a few hours</option>
+            <option value="within a day" <%= (currentUser.hostProfile?.responseTime === 'within a day') ? 'selected' : '' %>>Within a day</option>
+            <option value="a few days or more" <%= (currentUser.hostProfile?.responseTime === 'a few days or more') ? 'selected' : '' %>>A few days or more</option>
           </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-time Preview -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-eye me-2"></i>Live Preview
+      </h3>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title" id="preview-title">Your listing title will appear here...</h5>
+          <p class="text-muted mb-2">
+            <i class="fas fa-map-marker-alt me-1"></i>
+            <span id="preview-location">Location</span>, <span id="preview-country">Country</span>
+          </p>
+          <p class="text-primary fw-bold mb-2">
+            ₹<span id="preview-price">0</span> / night
+          </p>
+          <p class="card-text" id="preview-description">Your description will appear here...</p>
+          <div class="d-flex gap-3 text-muted small">
+            <span><span id="preview-guests">0</span> guests</span>
+            <span><span id="preview-bedrooms">0</span> bedrooms</span>
+            <span><span id="preview-bathrooms">0</span> bathrooms</span>
+          </div>
+          <div class="mt-2">
+            <span class="badge bg-secondary" id="preview-category">Category</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Host Preview Section -->
+    <div class="form-section p-4 border rounded shadow-sm bg-light mb-4">
+      <h3 class="section-title mb-3">
+        <i class="fas fa-user-circle me-2"></i>Host Preview
+      </h3>
+      <p class="text-muted mb-3">This is how your host profile will appear to guests:</p>
+      
+      <div class="bg-white p-4 rounded shadow-sm">
+        <h5 class="mb-3">Meet your host</h5>
+        <div class="row">
+          <div class="col-md-4 text-center mb-3">
+            <img id="host-preview-photo" 
+                 src="<%= currentUser.avatar?.url || '/images/default-avatar.jpg' %>" 
+                 alt="Host photo" 
+                 class="rounded-circle mb-3" 
+                 width="120" 
+                 height="120"
+                 style="object-fit: cover; border: 3px solid #007bff;"
+                 onerror="this.src='/images/default-avatar.jpg'">
+            <h6 class="mb-1" id="host-preview-name">
+              <%= currentUser.fullName || currentUser.username || 'Your Name' %>
+            </h6>
+            <p class="text-muted mb-0">Joined <%= new Date().getFullYear() %></p>
+          </div>
+          <div class="col-md-8">
+            <div class="host-details">
+              <div class="mb-3">
+                <h6 class="fw-bold text-dark">About</h6>
+                <p class="mb-0" id="host-preview-bio">Your bio will appear here...</p>
+              </div>
+              
+              <div class="mb-3">
+                <h6 class="fw-bold text-dark">Languages</h6>
+                <div class="d-flex flex-wrap gap-2" id="host-preview-languages">
+                  <span class="badge bg-light text-dark border">Select languages</span>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <h6 class="fw-bold text-dark">Response time</h6>
+                <p class="mb-0 text-success" id="host-preview-response">
+                  <i class="fas fa-clock me-1"></i>
+                  <span>Select response time</span>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -368,59 +411,12 @@
     border-color: #3498db;
   }
   
-  .languages-checkboxes {
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 1rem;
-  }
-  
-  .form-check-inline {
-    margin-right: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
   .preview-img {
     transition: all 0.3s ease;
   }
   
   .preview-img:hover {
     transform: scale(1.05);
-  }
-  
-  .was-validated .form-control:invalid { 
-    border-color: #dc3545; 
-    animation: shake 0.5s ease-in-out;
-  }
-  
-  .was-validated .form-control:valid { 
-    border-color: #28a745; 
-  }
-  
-  .invalid-feedback { 
-    display: none; 
-    color: #dc3545; 
-    font-size: 0.875em; 
-  }
-  
-  .valid-feedback { 
-    display: none; 
-    color: #28a745; 
-    font-size: 0.875em; 
-  }
-  
-  .form-control.is-invalid ~ .invalid-feedback { 
-    display: block; 
-  }
-  
-  .form-control.is-valid ~ .valid-feedback { 
-    display: block; 
-  }
-  
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
   }
   
   .save-btn { 
@@ -441,49 +437,60 @@
     box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); 
   }
   
-  .save-btn:active { 
-    transform: scale(0.98); 
+  .languages-checkboxes {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
   }
   
-  .save-btn:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .form-section {
-      padding: 1.5rem !important;
-    }
-    
-    .amenities-grid .col-md-4 {
-      flex: 0 0 100%;
-      max-width: 100%;
-    }
+  .form-check-inline {
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
   }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Image preview
+    // Property image preview
     const imageFile = document.getElementById('imageFile');
     const preview = document.getElementById('previewImg');
 
-    imageFile.addEventListener('change', function() {
-      if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          preview.src = e.target.result;
-          preview.style.border = '2px solid #28a745';
-        };
-        reader.readAsDataURL(this.files[0]);
-      } else {
-        preview.src = '/images/default.jpg';
-        preview.style.border = '2px dashed #ddd';
-      }
-    });
+    if (imageFile && preview) {
+      imageFile.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.border = '2px solid #28a745';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Owner photo preview
+    const ownerPhoto = document.getElementById('ownerPhoto');
+    const ownerPreview = document.getElementById('ownerPreview');
+    const hostPreviewPhoto = document.getElementById('host-preview-photo');
+
+    if (ownerPhoto && ownerPreview) {
+      ownerPhoto.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            ownerPreview.src = e.target.result;
+            ownerPreview.style.border = '2px solid #28a745';
+            if (hostPreviewPhoto) {
+              hostPreviewPhoto.src = e.target.result;
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
 
     // Character counters
     const descInput = document.getElementById('description');
@@ -505,55 +512,125 @@
       bioCount.textContent = bioInput.value.length;
     }
 
-    // Enhanced form validation
-    const form = document.getElementById('newForm');
-    const submitBtn = document.getElementById('submit-btn');
+    // Real-time preview updates
+    function updatePreview() {
+      const titleInput = document.getElementById('title');
+      const descInput = document.getElementById('description');
+      const locationInput = document.getElementById('location');
+      const countryInput = document.getElementById('country');
+      const priceInput = document.getElementById('price');
+      const guestsSelect = document.getElementById('maxGuests');
+      const bedroomsSelect = document.getElementById('bedrooms');
+      const bathroomsSelect = document.getElementById('bathrooms');
+      const categorySelect = document.getElementById('category');
 
-    form.addEventListener('submit', function(event) {
-      form.classList.add('was-validated');
+      const previewTitle = document.getElementById('preview-title');
+      const previewDesc = document.getElementById('preview-description');
+      const previewLocation = document.getElementById('preview-location');
+      const previewCountry = document.getElementById('preview-country');
+      const previewPrice = document.getElementById('preview-price');
+      const previewGuests = document.getElementById('preview-guests');
+      const previewBedrooms = document.getElementById('preview-bedrooms');
+      const previewBathrooms = document.getElementById('preview-bathrooms');
+      const previewCategory = document.getElementById('preview-category');
+
+      if (previewTitle) previewTitle.textContent = titleInput?.value || 'Your listing title will appear here...';
+      if (previewDesc) previewDesc.textContent = descInput?.value || 'Your description will appear here...';
+      if (previewLocation) previewLocation.textContent = locationInput?.value || 'Location';
+      if (previewCountry) previewCountry.textContent = countryInput?.value || 'Country';
+      if (previewPrice) previewPrice.textContent = priceInput?.value ? parseInt(priceInput.value).toLocaleString('en-IN') : '0';
+      if (previewGuests) previewGuests.textContent = guestsSelect?.value || '0';
+      if (previewBedrooms) previewBedrooms.textContent = bedroomsSelect?.value === '0' ? 'Studio' : (bedroomsSelect?.value || '0');
+      if (previewBathrooms) previewBathrooms.textContent = bathroomsSelect?.value || '0';
+      if (previewCategory) previewCategory.textContent = categorySelect?.value || 'Category';
+    }
+
+    // Host preview updates
+    function updateHostPreview() {
+      const hostNameInput = document.getElementById('hostName');
+      const hostBioInput = document.getElementById('hostBio');
+      const responseTimeSelect = document.getElementById('responseTime');
+      const languageCheckboxes = document.querySelectorAll('input[name="host[languages]"]:checked');
       
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        // Scroll to first invalid field
-        const firstInvalid = form.querySelector(':invalid');
-        if (firstInvalid) {
-          firstInvalid.focus();
-          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      } else {
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Listing...';
+      const hostPreviewName = document.getElementById('host-preview-name');
+      const hostPreviewBio = document.getElementById('host-preview-bio');
+      const hostPreviewResponse = document.getElementById('host-preview-response');
+      const hostPreviewLanguages = document.getElementById('host-preview-languages');
+      
+      // Update name
+      if (hostPreviewName) {
+        hostPreviewName.textContent = hostNameInput?.value || 'Your Name';
       }
+      
+      // Update bio
+      if (hostPreviewBio) {
+        hostPreviewBio.textContent = hostBioInput?.value || 'Your bio will appear here...';
+      }
+      
+      // Update response time
+      if (hostPreviewResponse) {
+        const responseSpan = hostPreviewResponse.querySelector('span');
+        if (responseSpan) {
+          responseSpan.textContent = responseTimeSelect?.value ? `Responds ${responseTimeSelect.value}` : 'Select response time';
+        }
+      }
+      
+      // Update languages
+      if (hostPreviewLanguages) {
+        hostPreviewLanguages.innerHTML = '';
+        if (languageCheckboxes.length > 0) {
+          languageCheckboxes.forEach(checkbox => {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-light text-dark border';
+            badge.textContent = checkbox.value;
+            hostPreviewLanguages.appendChild(badge);
+          });
+        } else {
+          const placeholder = document.createElement('span');
+          placeholder.className = 'badge bg-light text-dark border';
+          placeholder.textContent = 'Select languages';
+          hostPreviewLanguages.appendChild(placeholder);
+        }
+      }
+    }
+
+    // Add event listeners for listing preview
+    const titleInput = document.getElementById('title');
+    const descInput = document.getElementById('description');
+    const locationInput = document.getElementById('location');
+    const countryInput = document.getElementById('country');
+    const priceInput = document.getElementById('price');
+    const guestsSelect = document.getElementById('maxGuests');
+    const bedroomsSelect = document.getElementById('bedrooms');
+    const bathroomsSelect = document.getElementById('bathrooms');
+    const categorySelect = document.getElementById('category');
+
+    if (titleInput) titleInput.addEventListener('input', updatePreview);
+    if (descInput) descInput.addEventListener('input', updatePreview);
+    if (locationInput) locationInput.addEventListener('input', updatePreview);
+    if (countryInput) countryInput.addEventListener('input', updatePreview);
+    if (priceInput) priceInput.addEventListener('input', updatePreview);
+    if (guestsSelect) guestsSelect.addEventListener('change', updatePreview);
+    if (bedroomsSelect) bedroomsSelect.addEventListener('change', updatePreview);
+    if (bathroomsSelect) bathroomsSelect.addEventListener('change', updatePreview);
+    if (categorySelect) categorySelect.addEventListener('change', updatePreview);
+
+    // Add event listeners for host preview
+    const hostNameInput = document.getElementById('hostName');
+    const hostBioInput = document.getElementById('hostBio');
+    const responseTimeSelect = document.getElementById('responseTime');
+    const languageCheckboxes = document.querySelectorAll('input[name="host[languages]"]');
+    
+    if (hostNameInput) hostNameInput.addEventListener('input', updateHostPreview);
+    if (hostBioInput) hostBioInput.addEventListener('input', updateHostPreview);
+    if (responseTimeSelect) responseTimeSelect.addEventListener('change', updateHostPreview);
+    
+    languageCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', updateHostPreview);
     });
 
-    // Real-time validation
-    const inputs = form.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
-      input.addEventListener('blur', function() {
-        if (form.classList.contains('was-validated')) {
-          if (this.checkValidity()) {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-          } else {
-            this.classList.remove('is-valid');
-            this.classList.add('is-invalid');
-          }
-        }
-      });
-    });
-
-    // Amenities interaction
-    const amenityChecks = document.querySelectorAll('.amenity-check');
-    amenityChecks.forEach(check => {
-      const input = check.querySelector('input');
-      check.addEventListener('click', function(e) {
-        if (e.target !== input) {
-          input.checked = !input.checked;
-        }
-      });
-    });
+    // Initial updates
+    updatePreview();
+    updateHostPreview();
   });
 </script>

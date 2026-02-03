@@ -1,6 +1,11 @@
 <% showNavbar = true %>
 <% stickyFooter = true %>
 <% layout("layouts/boilerplate") %>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="/node_modules/leaflet/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="/node_modules/leaflet/dist/leaflet.js"></script>
 <%
   const reviews = listing.reviews || [];
   const averageRating = reviews.length
@@ -19,15 +24,10 @@
     && String(currentUser._id) === String(listing.owner._id);
 
   const formatPrice = n => n.toLocaleString('en-IN');
-  const ratingDistribution = [75, 16, 3, 0, 0];
-  const ratingSummary = [
-    { category: "Cleanliness", icon: "fas fa-spray-can-sparkles", value: 4.9 },
-    { category: "Accuracy", icon: "fas fa-check-circle", value: 4.9 },
-    { category: "Check-in", icon: "fas fa-key", value: 4.8 },
-    { category: "Communication", icon: "fas fa-comment", value: 4.8 },
-    { category: "Location", icon: "fas fa-map", value: 5.0 },
-    { category: "Value", icon: "fas fa-tag", value: 4.8 }
-  ];
+  // Only show rating section if there are actual reviews
+  const hasReviews = reviews.length > 0;
+  const ratingDistribution = hasReviews ? [0, 0, 0, 0, 0] : []; // Calculate from actual reviews
+  const ratingSummary = hasReviews ? [] : []; // Only show if there are reviews
   
   // Helper function to get amenity icons
   function getAmenityIcon(amenity) {
@@ -52,61 +52,63 @@
     return iconMap[amenity] || 'fas fa-check';
   }
   
-  // REAL AMENITIES from database or default fallback
+  // REAL AMENITIES from database only
   const amenities = listing.amenities && listing.amenities.length > 0 
     ? listing.amenities.map(amenity => ({
         icon: getAmenityIcon(amenity),
         label: amenity
       }))
-    : [
-        { icon: "fas fa-wifi", label: "Basic amenities available" },
-        { icon: "fas fa-car", label: "Parking available" },
-        { icon: "fas fa-utensils", label: "Kitchen facilities" },
-        { icon: "fas fa-tv", label: "Entertainment" }
-      ];
+    : [];
   
-  // DYNAMIC HOST OBJECT from database
-  const host = {
-    name: listing.owner.fullName || listing.owner.username,
-    reviews: listing.owner.totalHostReviews || 0,
-    rating: listing.owner.hostRating || 0,
-    yearsHosting: listing.owner.yearsHosting || 1,
-    info: [
-      { icon: "fas fa-calendar-alt", text: `Joined ${new Date(listing.owner.joinDate || listing.owner.createdAt).getFullYear()}` },
-      { icon: "fas fa-language", text: `Speaks ${listing.owner.languages && listing.owner.languages.length > 0 ? listing.owner.languages.join(', ') : 'English'}` }
-    ],
-    description: listing.owner.bio || "Welcome! I love sharing amazing places with fellow travelers.",
-    responseRate: listing.owner.responseRate || "95%",
-    responseTime: listing.owner.responseTime || "within a few hours",
-    verified: listing.owner.verified || false,
-    superhost: listing.owner.superhost || false,
-    avatar: listing.owner.avatar || "/images/default-avatar.jpg"
-  };
+  // Host data is accessed directly from listing.owner
 
   // Check if user has favorited this listing
   const isFavorited = currentUser && currentUser.favorites && currentUser.favorites.includes(listing._id);
 %>
 
-<div class="container my-4">
-  <!-- Enhanced Header with Action Buttons -->
+<div class="container-fluid px-0">
+  <!-- Hero Image Section -->
+  <div class="listing-hero">
+    <img src="<%= imgUrl %>" alt="<%= listing.title %>" class="hero-image">
+    <div class="hero-overlay">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title"><%= listing.title %></h1>
+          <div class="hero-details">
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <span><%= averageRating %></span>
+              <span class="review-count">(<%= reviews.length %> reviews)</span>
+            </div>
+            <div class="location">
+              <i class="fas fa-map-marker-alt"></i>
+              <span><%= listing.location %>, <%= listing.country %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container my-5">
   <div class="d-flex justify-content-between align-items-start mb-4">
     <div class="flex-grow-1">
-      <h1 class="mb-2"><%= listing.title %></h1>
-      <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-star text-warning me-1"></i>
-          <span class="fw-bold"><%= averageRating %></span>
-          <span class="text-muted ms-1">(<%= reviews.length %> reviews)</span>
+      <div class="property-info-card">
+        <div class="price-section">
+          <h2 class="price">₹<%= listing.price.toLocaleString('en-IN') %></h2>
+          <span class="price-unit">per night</span>
         </div>
-        <div class="text-muted">
-          <i class="fas fa-map-marker-alt me-1"></i>
-          <%= listing.location %>, <%= listing.country %>
-        </div>
-        <!-- Property Details -->
-        <div class="text-muted small">
-          <%= listing.maxGuests || 2 %> guests · 
-          <%= listing.bedrooms || 1 %> bedroom<%= (listing.bedrooms || 1) !== 1 ? 's' : '' %> · 
-          <%= listing.bathrooms || 1 %> bath<%= (listing.bathrooms || 1) !== 1 ? 's' : '' %>
+        <div class="property-details">
+          <% if (listing.maxGuests) { %>
+            <span class="detail-item"><i class="fas fa-users"></i> <%= listing.maxGuests %> guests</span>
+          <% } %>
+          <% if (listing.bedrooms !== undefined) { %>
+            <span class="detail-item"><i class="fas fa-bed"></i> <%= listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed` %></span>
+          <% } %>
+          <% if (listing.bathrooms) { %>
+            <span class="detail-item"><i class="fas fa-bath"></i> <%= listing.bathrooms %> bath</span>
+          <% } %>
         </div>
       </div>
     </div>
@@ -114,13 +116,12 @@
     <!-- Action Buttons -->
     <div class="d-flex gap-2 flex-wrap">
       <% if (currentUser) { %>
-        <button class="btn btn-outline-secondary btn-sm" id="favorite-btn" data-listing-id="<%= listing._id %>" 
-                title="<%= isFavorited ? 'Remove from favorites' : 'Add to favorites' %>">
-          <i class="<%= isFavorited ? 'fas' : 'far' %> fa-heart text-danger"></i>
+        <button class="action-btn-modern favorite-btn" id="favorite-btn" data-listing-id="<%= listing._id %>">
+          <i class="<%= isFavorited ? 'fas' : 'far' %> fa-heart"></i>
         </button>
       <% } %>
       
-      <button class="btn btn-outline-secondary btn-sm" id="share-btn" title="Share listing">
+      <button class="action-btn-modern share-btn" id="share-btn">
         <i class="fas fa-share"></i>
       </button>
     </div>
@@ -129,22 +130,15 @@
   <div class="row">
     <!-- LEFT COLUMN -->
     <div class="col-lg-8">
-      <!-- Enhanced Image with Click to Zoom -->
-      <img src="<%= imgUrl %>" 
-           alt="<%= listing.title %>" 
-           class="img-fluid rounded mb-3 main-listing-image" 
-           style="width: 100%; max-height: 450px; object-fit: cover; cursor: pointer;"
-           title="Click to view full size">
-      
-      <p class="text-muted mb-1">
-        <i class="fas fa-map-marker-alt"></i> <%= listing.location %>, <%= listing.country %>
-      </p>
-      <h4 class="text-primary mb-3">₹ <%= formatPrice(listing.price) %> / night</h4>
-      <p class="mb-4"><%= listing.description %></p>
+      <div class="description-section">
+        <h3 class="section-title">About this place</h3>
+        <p class="description-text"><%= listing.description %></p>
+      </div>
     </div>
     
     <!-- RIGHT COLUMN -->
     <div class="col-lg-4 mt-lg-4">
+
       <section class="mb-3">
         <h4>What this place offers</h4>
         
@@ -195,36 +189,18 @@
     </div>
   </div>
   
-  <!-- RATING SECTION (unchanged) -->
+  <!-- RATING SECTION - Only show if reviews exist -->
+  <% if (hasReviews && averageRating !== 'N/A') { %>
   <div class="container-fluid px-0 mb-5">
     <section class="text-center" style="background: #fff; border-bottom: 1px solid #eee; padding-top:2rem;">
       <div class="d-flex justify-content-center align-items-center mb-2" style="width: max-content; margin:auto;">
         <h1 style="font-weight:700; font-size:3rem; margin:0;"><%= averageRating %></h1>
       </div>
-      <h3 class="fw-semibold mb-1">Guest favourite</h3>
-      <p class="text-muted" style="max-width:320px; margin:auto;">This home is a guest favourite based on ratings, reviews and reliability</p>
-      <div style="display:flex; justify-content:center; width:100%; border-top:1px solid #ddd; border-bottom:1px solid #ddd; padding:1rem 0; max-width:1200px; margin:2rem auto;">
-        <div style="flex-basis:220px; min-width:180px; padding:0 1rem; border-right:1px solid #ddd; text-align:left;">
-          <h6 style="font-weight:600;">Overall rating</h6>
-          <% ratingDistribution.forEach((pct, i) => { %>
-            <div style="display:flex;align-items:center;margin-bottom:0.4rem;">
-              <small><%= 5 - i %></small>
-              <div style="flex-grow:1; margin-left:0.5rem; height:6px; background:#e9ecef; border-radius:2px;">
-                <div style="width:<%= pct %>%;height:100%;background:#212529; border-radius:2px;"></div>
-              </div>
-            </div>
-          <% }) %>
-        </div>
-        <% ratingSummary.forEach((item, idx) => { %>
-          <div style="flex:1;text-align:center;padding:0 1rem; border-left:1px solid #ddd; border-right:<%= idx === ratingSummary.length - 1 ? 'none' : '1px solid #ddd' %>; display:flex; flex-direction:column; align-items:center;">
-            <div style="font-weight:700;font-size:1.25rem;margin-bottom:.3rem;"><%= item.value %></div>
-            <i class="<%= item.icon %>" style="font-size:1.5rem;color:#212529;margin-bottom:.3rem;"></i>
-            <div style="font-size:.95rem;font-weight:600;white-space:nowrap;"><%= item.category %></div>
-          </div>
-        <% }) %>
-      </div>
+      <h3 class="fw-semibold mb-1">Rated by guests</h3>
+      <p class="text-muted" style="max-width:320px; margin:auto;">Based on <%= reviews.length %> review<%= reviews.length !== 1 ? 's' : '' %></p>
     </section>
   </div>
+  <% } %>
   
   <!-- ENHANCED REVIEWS -->
   <div class="row my-5">
@@ -390,49 +366,128 @@
     </div>
   </div>
   
-  <!-- DYNAMIC HOST SECTION -->
+  <!-- HOST SECTION -->
   <div class="row mb-5">
-    <div class="col-lg-6 d-flex bg-white p-4 rounded mb-4">
-      <div class="me-3">
-        <img src="<%= host.avatar %>" 
-             alt="<%= host.name %>" 
-             class="rounded-circle" 
-             width="60" 
-             height="60"
-             style="object-fit: cover;"
-             onerror="this.src='/images/default-avatar.jpg'">
-      </div>
-      <div>
-        <h5 class="fw-bold">
-          <%= host.name %>
-          <% if (host.verified) { %>
-            <i class="fas fa-check-circle text-primary ms-1" title="Verified host"></i>
-          <% } %>
-        </h5>
-        <% if (host.superhost) { %>
-          <span class="badge bg-success">Superhost</span>
-        <% } %>
-        <p class="mt-2"><strong><%= host.reviews %></strong> Reviews &middot; <strong><%= host.rating %></strong>★ &middot; <strong><%= host.yearsHosting %></strong> Years hosting</p>
-        <% host.info.forEach(i => { %><p><i class="<%= i.icon %> me-2"></i><%= i.text %></p><% }) %>
-      </div>
-    </div>
-    <div class="col-lg-6">
-      <div class="bg-white p-4 rounded mb-3">
-        <h5><%= host.name %><% if (host.superhost) { %> is a Superhost<% } %></h5>
-        <p><%= host.description %></p>
-        <% if (host.superhost) { %>
-          <p class="small text-muted">Superhosts are experienced, highly rated hosts committed to providing great stays.</p>
-        <% } %>
-        <p><strong>Response rate:</strong> <%= host.responseRate %></p>
-        <p><strong>Responds:</strong> <%= host.responseTime %></p>
-        <button class="btn btn-outline-primary" onclick="alert('Message feature coming soon!')">Message host</button>
-      </div>
-      <div class="bg-light p-3 rounded">
-        <i class="fas fa-info-circle me-2"></i>
-        To help protect your payment, always use our platform to send money and communicate with hosts.
+    <div class="col-12">
+      <div class="bg-white p-4 rounded shadow-sm">
+        <h4 class="mb-3">Meet your host</h4>
+        <div class="row">
+          <div class="col-md-4 text-center mb-3">
+            <img src="<%= listing.owner.avatar?.url || '/images/default-avatar.jpg' %>" 
+                 alt="<%= listing.owner.firstName ? `${listing.owner.firstName} ${listing.owner.lastName || ''}`.trim() : listing.owner.username %>" 
+                 class="rounded-circle mb-3" 
+                 width="120" 
+                 height="120"
+                 style="object-fit: cover; border: 3px solid #007bff;"
+                 onerror="this.src='/images/default-avatar.jpg'">
+            <h5 class="mb-1">
+              <%= listing.owner.firstName ? `${listing.owner.firstName} ${listing.owner.lastName || ''}`.trim() : listing.owner.username %>
+              <% if (listing.owner.verified) { %>
+                <i class="fas fa-check-circle text-primary ms-1" title="Verified"></i>
+              <% } %>
+            </h5>
+            <p class="text-muted mb-0">Joined <%= new Date(listing.owner.createdAt || listing.owner.joinDate).getFullYear() %></p>
+          </div>
+          <div class="col-md-8">
+            <div class="host-details">
+              <% if (listing.owner.bio && listing.owner.bio.trim() !== '') { %>
+                <div class="mb-3">
+                  <h6 class="fw-bold text-dark">About</h6>
+                  <p class="mb-0"><%= listing.owner.bio %></p>
+                </div>
+              <% } %>
+              
+
+              
+              <% if (listing.owner.hostProfile?.responseTime) { %>
+                <div class="mb-3">
+                  <h6 class="fw-bold text-dark">Response time</h6>
+                  <p class="mb-0 text-success">
+                    <i class="fas fa-clock me-1"></i>
+                    Responds <%= listing.owner.hostProfile.responseTime %>
+                  </p>
+                </div>
+              <% } %>
+              
+              <% 
+                // Only show additional stats if they exist and are meaningful
+                const hasStats = (listing.owner.languages && listing.owner.languages.length > 0) || 
+                                (listing.owner.hostProfile?.totalListings && listing.owner.hostProfile.totalListings > 0);
+              %>
+              <% if (hasStats) { %>
+                <div class="row">
+                  <% if (listing.owner.languages && listing.owner.languages.length > 0) { %>
+                    <div class="col-6">
+                      <h6 class="fw-bold text-dark">Languages</h6>
+                      <div class="d-flex flex-wrap gap-1">
+                        <% listing.owner.languages.forEach(lang => { %>
+                          <span class="badge bg-light text-dark border small"><%= lang %></span>
+                        <% }) %>
+                      </div>
+                    </div>
+                  <% } %>
+                  <% if (listing.owner.hostProfile?.totalListings && listing.owner.hostProfile.totalListings > 0) { %>
+                    <div class="col-6">
+                      <h6 class="fw-bold text-dark">Total listings</h6>
+                      <p class="mb-0"><%= listing.owner.hostProfile.totalListings %></p>
+                    </div>
+                  <% } %>
+                </div>
+              <% } %>
+              
+              <% 
+                // If no host profile information is available, show a basic message
+                const hasHostInfo = (listing.owner.bio && listing.owner.bio.trim() !== '') ||
+                                   (listing.owner.languages && listing.owner.languages.length > 0) ||
+                                   (listing.owner.hostProfile?.responseTime);
+              %>
+              <% if (!hasHostInfo) { %>
+                <div class="text-muted">
+                  <p class="mb-0">Host profile information will be updated soon.</p>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+  
+
+  
+  <!-- LOCATION SECTION -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="location-section">
+        <h4 class="mb-3">Where you'll be</h4>
+        <div class="location-info mb-3">
+          <p class="location-address">
+            <i class="fas fa-map-marker-alt me-2"></i>
+            <%= listing.location %>, <%= listing.country %>
+          </p>
+        </div>
+        
+        <!-- Interactive Map -->
+        <div id="map" class="google-map"></div>
+        
+        <!-- Location Details -->
+        <div class="location-details mt-3">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Neighborhood highlights</h6>
+              <p class="text-muted">Explore the local area and discover nearby attractions, restaurants, and amenities.</p>
+            </div>
+            <div class="col-md-6">
+              <h6>Getting around</h6>
+              <p class="text-muted">Easy access to public transportation and major landmarks in <%= listing.location %>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <%- include('booking-section') %>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -529,6 +584,16 @@
     box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.25);
   }
   
+  .btn-primary {
+    background-color: #ff385c;
+    border-color: #ff385c;
+  }
+  
+  .btn-primary:hover {
+    background-color: #e31c5f;
+    border-color: #e31c5f;
+  }
+  
   .form-control.is-invalid {
     animation: shake 0.5s ease-in-out;
   }
@@ -537,6 +602,270 @@
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
+  }
+  
+  .booking-card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+  }
+  
+  .booking-card .form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .booking-card .form-control:focus {
+    border-color: #ff385c;
+    box-shadow: 0 0 0 0.2rem rgba(255, 56, 92, 0.25);
+  }
+  
+  .pricing-breakdown {
+    font-size: 14px;
+  }
+  
+  .pricing-breakdown hr {
+    margin: 0.5rem 0;
+  }
+  
+
+  .booking-section {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+  }
+  
+  .pricing-card {
+    border: 1px solid #dee2e6;
+  }
+  
+  #bookingForm .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  }
+  
+  /* Google Maps Styles */
+  .location-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  
+  .google-map {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: #f8f9fa;
+  }
+  
+  .location-address {
+    font-size: 1.1rem;
+    color: #333;
+    margin: 0;
+  }
+  
+  .location-details h6 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .google-map {
+      height: 300px;
+    }
+    
+    .location-section {
+      padding: 1.5rem;
+    }
+  }
+  
+  /* Modern Hero Section */
+  .listing-hero {
+    position: relative;
+    height: 60vh;
+    min-height: 400px;
+    overflow: hidden;
+  }
+  
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+    display: flex;
+    align-items: flex-end;
+  }
+  
+  .hero-content {
+    color: white;
+    padding: 2rem 0;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+  
+  .hero-details {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .rating i {
+    color: #ffc107;
+  }
+  
+  .location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Modern Property Info */
+  .property-info-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .price-section {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #007bff;
+    margin: 0;
+  }
+  
+  .price-unit {
+    font-size: 1.1rem;
+    color: #666;
+  }
+  
+  .property-details {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  .detail-item i {
+    color: #007bff;
+    width: 16px;
+  }
+  
+  /* Modern Action Buttons */
+  .action-btn-modern {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #e9ecef;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #666;
+  }
+  
+  .action-btn-modern:hover {
+    border-color: #007bff;
+    color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+  }
+  
+  .favorite-btn.active {
+    border-color: #dc3545;
+    color: #dc3545;
+  }
+  
+  /* Section Styling */
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #007bff;
+    display: inline-block;
+  }
+  
+  .description-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+  }
+  
+  .description-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #555;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2rem;
+    }
+    
+    .hero-details {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .price {
+      font-size: 2rem;
+    }
+    
+    .property-details {
+      flex-direction: column;
+      gap: 1rem;
+    }
   }
 </style>
 
@@ -548,6 +877,7 @@ window.listingData = {
   title: '<%= listing.title %>',
   location: '<%= listing.location %>',
   country: '<%= listing.country %>',
+  price: <%= listing.price %>,
   isFavorited: <%= isFavorited || false %>,
   currentUser: <%= currentUser ? JSON.stringify({id: currentUser._id, isAdmin: currentUser.isAdmin}) : 'null' %>,
   isOwner: <%= isOwner || false %>
@@ -577,6 +907,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCharacterCounter();
   setupFormValidation();
   setupDeleteConfirmations();
+  setupBookingCalculator();
+  setupBookingSection();
 });
 
 // Amenity toggle functionality
@@ -771,6 +1103,97 @@ function setupDeleteConfirmations() {
   });
 }
 
+// Booking calculator
+function setupBookingCalculator() {
+  const checkinInput = document.querySelector('input[name="checkin"]');
+  const checkoutInput = document.querySelector('input[name="checkout"]');
+  const nightsSpan = document.getElementById('nights');
+  const nightsPlural = document.getElementById('nightsPlural');
+  const subtotalSpan = document.getElementById('subtotal');
+  const serviceFeeSpan = document.getElementById('serviceFee');
+  const taxesSpan = document.getElementById('taxes');
+  const totalSpan = document.getElementById('total');
+  
+  if (!checkinInput || !checkoutInput) return;
+  
+  function calculatePricing() {
+    const checkin = new Date(checkinInput.value);
+    const checkout = new Date(checkoutInput.value);
+    
+    if (checkin && checkout && checkout > checkin) {
+      const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+      const subtotal = nights * window.listingData.price;
+      const serviceFee = Math.round(subtotal * 0.1);
+      const taxes = Math.round(subtotal * 0.05);
+      const total = subtotal + serviceFee + taxes;
+      
+      if (nightsSpan) nightsSpan.textContent = nights;
+      if (nightsPlural) nightsPlural.textContent = nights === 1 ? '' : 's';
+      if (subtotalSpan) subtotalSpan.textContent = '₹' + subtotal.toLocaleString('en-IN');
+      if (serviceFeeSpan) serviceFeeSpan.textContent = '₹' + serviceFee.toLocaleString('en-IN');
+      if (taxesSpan) taxesSpan.textContent = '₹' + taxes.toLocaleString('en-IN');
+      if (totalSpan) totalSpan.textContent = '₹' + total.toLocaleString('en-IN');
+    } else {
+      if (nightsSpan) nightsSpan.textContent = '0';
+      if (nightsPlural) nightsPlural.textContent = 's';
+      if (subtotalSpan) subtotalSpan.textContent = '₹0';
+      if (serviceFeeSpan) serviceFeeSpan.textContent = '₹0';
+      if (taxesSpan) taxesSpan.textContent = '₹0';
+      if (totalSpan) totalSpan.textContent = '₹0';
+    }
+  }
+  
+  checkinInput.addEventListener('change', calculatePricing);
+  checkoutInput.addEventListener('change', calculatePricing);
+  
+  const today = new Date().toISOString().split('T')[0];
+  checkinInput.min = today;
+  checkoutInput.min = today;
+  
+  checkinInput.addEventListener('change', () => {
+    checkoutInput.min = checkinInput.value;
+  });
+}
+
+// Booking section setup
+function setupBookingSection() {
+  const showBookingBtn = document.getElementById('showBookingForm');
+
+  const bookingFormDiv = document.getElementById('bookingForm');
+  const cancelBtn = document.getElementById('cancelBooking');
+  const submitBtn = document.getElementById('submitBooking');
+  const form = document.getElementById('actualBookingForm');
+  
+  function showBookingForm() {
+    if (showBookingBtn) showBookingBtn.style.display = 'none';
+    if (bookingFormDiv) {
+      bookingFormDiv.classList.remove('d-none');
+      bookingFormDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+  
+  if (showBookingBtn) {
+    showBookingBtn.addEventListener('click', showBookingForm);
+  }
+  
+
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      if (bookingFormDiv) bookingFormDiv.classList.add('d-none');
+      if (showBookingBtn) showBookingBtn.style.display = 'block';
+    });
+  }
+  
+  // Form submission with loading state
+  if (form && submitBtn) {
+    form.addEventListener('submit', function() {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    });
+  }
+}
+
 // Utility function
 function copyToClipboard(text) {
   if (navigator.clipboard) {
@@ -787,4 +1210,120 @@ function copyToClipboard(text) {
     alert('Link copied to clipboard!');
   }
 }
+
+// Simple booking functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const bookNowBtn = document.getElementById('showBookingForm');
+  const bookingForm = document.getElementById('bookingForm');
+  const cancelBtn = document.getElementById('cancelBooking');
+  
+  if (bookNowBtn && bookingForm) {
+    bookNowBtn.addEventListener('click', function() {
+      bookNowBtn.style.display = 'none';
+      bookingForm.classList.remove('d-none');
+      bookingForm.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+  
+  if (cancelBtn && bookingForm && bookNowBtn) {
+    cancelBtn.addEventListener('click', function() {
+      bookingForm.classList.add('d-none');
+      bookNowBtn.style.display = 'block';
+    });
+  }
+});
+
+// Simple Map Initialization
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('map') && typeof L !== 'undefined') {
+    // Default coordinates (Delhi, India)
+    let lat = 28.6139;
+    let lng = 77.2090;
+    
+    // City coordinates mapping
+    const cityCoords = {
+      'mumbai': [19.0760, 72.8777],
+      'delhi': [28.6139, 77.2090],
+      'new delhi': [28.6139, 77.2090],
+      'bangalore': [12.9716, 77.5946],
+      'bengaluru': [12.9716, 77.5946],
+      'chennai': [13.0827, 80.2707],
+      'kolkata': [22.5726, 88.3639],
+      'hyderabad': [17.3850, 78.4867],
+      'pune': [18.5204, 73.8567],
+      'goa': [15.2993, 74.1240],
+      'panaji': [15.2993, 74.1240],
+      'jaipur': [26.9124, 75.7873],
+      'manali': [32.2396, 77.1887],
+      'shimla': [31.1048, 77.1734],
+      'rishikesh': [30.0869, 78.2676],
+      'udaipur': [24.5854, 73.7125],
+      'agra': [27.1767, 78.0081],
+      'varanasi': [25.3176, 82.9739],
+      'kochi': [9.9312, 76.2673],
+      'cochin': [9.9312, 76.2673],
+      'kerala': [10.8505, 76.2711],
+      'rajasthan': [26.9124, 75.7873],
+      'himachal pradesh': [32.2396, 77.1887],
+      'uttarakhand': [30.0869, 78.2676],
+      'india': [20.5937, 78.9629]
+    };
+    
+    // Check if listing has stored coordinates first
+    <% if (listing.coordinates && listing.coordinates.lat && listing.coordinates.lng) { %>
+      lat = <%= listing.coordinates.lat %>;
+      lng = <%= listing.coordinates.lng %>;
+      console.log('Using stored coordinates:', [lat, lng]);
+    <% } else { %>
+      // Get location from listing - try exact match first, then partial match
+      const listingLocation = '<%= listing.location %>'.toLowerCase().trim();
+      
+      // Try exact city match first
+      if (cityCoords[listingLocation]) {
+        [lat, lng] = cityCoords[listingLocation];
+        console.log('Found city match:', listingLocation, [lat, lng]);
+      } else {
+        // Try partial matches for common variations
+        for (const [city, coords] of Object.entries(cityCoords)) {
+          if (listingLocation.includes(city) || city.includes(listingLocation)) {
+            [lat, lng] = coords;
+            console.log('Found partial match:', city, [lat, lng]);
+            break;
+          }
+        }
+      }
+    <% } %>
+    
+    const listingLocation = '<%= listing.location %>'.toLowerCase().trim();
+    const listingCountry = '<%= listing.country %>'.toLowerCase().trim();
+    
+    // Initialize map
+    const map = L.map('map').setView([lat, lng], 13);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Add marker
+    const marker = L.marker([lat, lng]).addTo(map);
+    
+    // Add popup with location info
+    const isDefaultLocation = (lat === 28.6139 && lng === 77.2090 && listingLocation !== 'delhi');
+    const locationText = isDefaultLocation ? 
+      `📍 ${listingLocation}, ${listingCountry} (Approximate location)` : 
+      `📍 ${listingLocation}, ${listingCountry}`;
+    
+    marker.bindPopup(`
+      <div style="padding: 12px; min-width: 200px;">
+        <strong style="color: #333; font-size: 16px;"><%= listing.title %></strong><br>
+        <p style="margin: 8px 0; color: #666; font-size: 14px;">${locationText}</p>
+        <p style="margin: 0; font-weight: 600; color: #007bff; font-size: 15px;">
+          ₹<%= listing.price.toLocaleString('en-IN') %> per night
+        </p>
+        ${isDefaultLocation ? '<small style="color: #999;">Exact coordinates may vary</small>' : ''}
+      </div>
+    `).openPopup();
+  }
+});
 </script>

@@ -1,0 +1,488 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container-fluid my-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+      <div class="admin-sidebar">
+        <h5>Admin Panel</h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/admin/dashboard">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+          </a>
+          <a class="nav-link active" href="/admin/analytics">
+            <i class="fas fa-chart-bar me-2"></i>Analytics
+          </a>
+          <a class="nav-link" href="/admin/users">
+            <i class="fas fa-users me-2"></i>Users
+          </a>
+          <a class="nav-link" href="/admin/listings">
+            <i class="fas fa-home me-2"></i>Listings
+          </a>
+          <a class="nav-link" href="/admin/bookings">
+            <i class="fas fa-calendar me-2"></i>Bookings
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+      <div class="admin-header">
+        <h2>Analytics Dashboard</h2>
+        <div class="date-filter">
+          <select class="form-select" id="dateRange">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="metric-card">
+            <div class="metric-icon revenue">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="metric-info">
+              <h3>₹2,45,680</h3>
+              <p>Total Revenue</p>
+              <span class="metric-change positive">+12.5%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="metric-card">
+            <div class="metric-icon bookings">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="metric-info">
+              <h3>1,234</h3>
+              <p>Total Bookings</p>
+              <span class="metric-change positive">+8.3%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="metric-card">
+            <div class="metric-icon users">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-info">
+              <h3>5,678</h3>
+              <p>Active Users</p>
+              <span class="metric-change positive">+15.2%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="metric-card">
+            <div class="metric-icon listings">
+              <i class="fas fa-home"></i>
+            </div>
+            <div class="metric-info">
+              <h3>892</h3>
+              <p>Active Listings</p>
+              <span class="metric-change positive">+5.7%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="row mb-4">
+        <div class="col-lg-8">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h5>Revenue Trend</h5>
+              <div class="chart-controls">
+                <button class="btn btn-sm btn-outline-primary active">Revenue</button>
+                <button class="btn btn-sm btn-outline-primary">Bookings</button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h5>Booking Status</h5>
+            </div>
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tables Row -->
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="table-card">
+            <div class="table-header">
+              <h5>Top Performing Listings</h5>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Listing</th>
+                    <th>Bookings</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="listing-info">
+                        <img src="/images/default.jpg" alt="Listing" class="listing-thumb">
+                        <div>
+                          <div class="listing-title">Luxury Villa in Goa</div>
+                          <small class="text-muted">Goa, India</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>45</td>
+                    <td>₹89,500</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="listing-info">
+                        <img src="/images/default.jpg" alt="Listing" class="listing-thumb">
+                        <div>
+                          <div class="listing-title">Mountain Retreat</div>
+                          <small class="text-muted">Manali, India</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>38</td>
+                    <td>₹76,000</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="listing-info">
+                        <img src="/images/default.jpg" alt="Listing" class="listing-thumb">
+                        <div>
+                          <div class="listing-title">City Apartment</div>
+                          <small class="text-muted">Mumbai, India</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>32</td>
+                    <td>₹64,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-6">
+          <div class="table-card">
+            <div class="table-header">
+              <h5>Recent Activity</h5>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon new-booking">
+                  <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">New booking received</div>
+                  <div class="activity-description">John Doe booked "Beach Villa" for 3 nights</div>
+                  <small class="activity-time">2 minutes ago</small>
+                </div>
+              </div>
+              
+              <div class="activity-item">
+                <div class="activity-icon new-user">
+                  <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">New user registered</div>
+                  <div class="activity-description">Sarah Wilson joined as a host</div>
+                  <small class="activity-time">15 minutes ago</small>
+                </div>
+              </div>
+              
+              <div class="activity-item">
+                <div class="activity-icon new-listing">
+                  <i class="fas fa-home"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">New listing added</div>
+                  <div class="activity-description">"Cozy Cabin" in Shimla was published</div>
+                  <small class="activity-time">1 hour ago</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-sidebar {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  height: fit-content;
+}
+
+.admin-sidebar h5 {
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.admin-sidebar .nav-link {
+  color: #666;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.admin-sidebar .nav-link:hover,
+.admin-sidebar .nav-link.active {
+  background: #ff385c;
+  color: white;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-header h2 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.metric-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.metric-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.metric-icon.revenue { background: #28a745; }
+.metric-icon.bookings { background: #007bff; }
+.metric-icon.users { background: #ffc107; }
+.metric-icon.listings { background: #dc3545; }
+
+.metric-info h3 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.metric-info p {
+  margin: 0.25rem 0;
+  color: #666;
+}
+
+.metric-change {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.metric-change.positive {
+  color: #28a745;
+}
+
+.metric-change.negative {
+  color: #dc3545;
+}
+
+.chart-card,
+.table-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.chart-header,
+.table-header {
+  padding: 1.5rem 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-header h5,
+.table-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.chart-container {
+  padding: 1.5rem;
+  height: 300px;
+}
+
+.listing-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.listing-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.listing-title {
+  font-weight: 600;
+}
+
+.activity-list {
+  padding: 1.5rem;
+}
+
+.activity-item {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.activity-item:last-child {
+  margin-bottom: 0;
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.activity-icon.new-booking { background: #007bff; }
+.activity-icon.new-user { background: #28a745; }
+.activity-icon.new-listing { background: #ffc107; }
+
+.activity-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.activity-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.activity-time {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .chart-controls {
+    margin-top: 1rem;
+  }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Revenue Chart
+  const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+  new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      datasets: [{
+        label: 'Revenue',
+        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
+        borderColor: '#ff385c',
+        backgroundColor: 'rgba(255, 56, 92, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₹' + value.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Status Chart
+  const statusCtx = document.getElementById('statusChart').getContext('2d');
+  new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Confirmed', 'Pending', 'Cancelled'],
+      datasets: [{
+        data: [65, 25, 10],
+        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+});
+</script>

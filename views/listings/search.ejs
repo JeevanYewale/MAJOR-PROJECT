@@ -1,0 +1,353 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container my-4">
+  <!-- Search Header -->
+  <div class="search-header mb-4">
+    <h2>Search Results</h2>
+    <p class="text-muted">
+      <% if (resultsCount > 0) { %>
+        Found <%= resultsCount %> listing<%= resultsCount !== 1 ? 's' : '' %>
+        <% if (searchParams.location) { %>
+          for "<%= searchParams.location %>"
+        <% } %>
+      <% } else { %>
+        No listings found
+        <% if (searchParams.location) { %>
+          for "<%= searchParams.location %>"
+        <% } %>
+      <% } %>
+    </p>
+  </div>
+
+  <!-- Search Filters -->
+  <div class="search-filters mb-4">
+    <form action="/listings/search" method="GET" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Location</label>
+        <input type="text" name="location" class="form-control" 
+               placeholder="Where to?" value="<%= searchParams.location || '' %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="">All Categories</option>
+          <option value="beachfront" <%= searchParams.category === 'beachfront' ? 'selected' : '' %>>Beachfront</option>
+          <option value="cabins" <%= searchParams.category === 'cabins' ? 'selected' : '' %>>Cabins</option>
+          <option value="trending" <%= searchParams.category === 'trending' ? 'selected' : '' %>>Trending</option>
+          <option value="mountains" <%= searchParams.category === 'mountains' ? 'selected' : '' %>>Mountains</option>
+          <option value="countryside" <%= searchParams.category === 'countryside' ? 'selected' : '' %>>Countryside</option>
+          <option value="luxury" <%= searchParams.category === 'luxury' ? 'selected' : '' %>>Luxury</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Guests</label>
+        <select name="guests" class="form-select">
+          <option value="">Any</option>
+          <% for(let i = 1; i <= 10; i++) { %>
+            <option value="<%= i %>" <%= searchParams.guests == i ? 'selected' : '' %>>
+              <%= i %> guest<%= i > 1 ? 's' : '' %>
+            </option>
+          <% } %>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Min Price</label>
+        <input type="number" name="minPrice" class="form-control" 
+               placeholder="₹0" value="<%= searchParams.minPrice || '' %>">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Max Price</label>
+        <input type="number" name="maxPrice" class="form-control" 
+               placeholder="₹10000" value="<%= searchParams.maxPrice || '' %>">
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results -->
+  <% if (allListings.length > 0) { %>
+    <div class="listings-grid">
+      <% allListings.forEach(listing => { %>
+        <div class="listing-card">
+          <div class="listing-image-container">
+            <img src="<%= listing.image?.url || '/images/default.jpg' %>" 
+                 alt="<%= listing.title %>" 
+                 class="listing-image"
+                 loading="lazy">
+            <button class="favorite-btn" data-listing-id="<%= listing._id %>">
+              <i class="far fa-heart"></i>
+            </button>
+            <% if (listing.featured) { %>
+              <span class="featured-badge">Featured</span>
+            <% } %>
+          </div>
+          
+          <div class="listing-content">
+            <div class="listing-header">
+              <div class="listing-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <%= listing.location %>, <%= listing.country %>
+              </div>
+              <div class="listing-rating">
+                <i class="fas fa-star"></i>
+                <span><%= listing.averageRating || 'New' %></span>
+                <% if (listing.reviewCount > 0) { %>
+                  <small>(<%= listing.reviewCount %>)</small>
+                <% } %>
+              </div>
+            </div>
+            
+            <h3 class="listing-title"><%= listing.title %></h3>
+            
+            <div class="listing-details">
+              <% if (listing.maxGuests) { %>
+                <span><%= listing.maxGuests %> guests</span>
+              <% } %>
+              <% if (listing.bedrooms !== undefined) { %>
+                <span><%= listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed` %></span>
+              <% } %>
+              <% if (listing.bathrooms) { %>
+                <span><%= listing.bathrooms %> bath</span>
+              <% } %>
+            </div>
+            
+            <div class="listing-price">
+              <strong>₹<%= listing.price.toLocaleString('en-IN') %></strong>
+              <span class="price-period">night</span>
+            </div>
+            
+            <div class="listing-actions">
+              <a href="/listings/<%= listing._id %>" class="btn btn-primary">View Details</a>
+              <% if (currentUser && listing.owner && currentUser._id.toString() === listing.owner._id.toString()) { %>
+                <a href="/listings/<%= listing._id %>/edit" class="btn btn-outline-secondary">Edit</a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5">
+      <i class="fas fa-search fa-3x text-muted mb-3"></i>
+      <h4>No listings found</h4>
+      <p class="text-muted">Try adjusting your search criteria or browse all listings.</p>
+      <a href="/listings" class="btn btn-primary">View All Listings</a>
+    </div>
+  <% } %>
+</div>
+
+<style>
+.search-header h2 {
+  font-weight: 700;
+  color: #333;
+}
+
+.search-filters {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.listing-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.listing-image-container {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+
+.listing-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.listing-card:hover .listing-image {
+  transform: scale(1.05);
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.favorite-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.favorite-btn.active i {
+  color: #dc3545;
+}
+
+.featured-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.listing-content {
+  padding: 1.5rem;
+}
+
+.listing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.listing-location {
+  color: #666;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.listing-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.listing-rating i {
+  color: #ffc107;
+}
+
+.listing-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #333;
+  line-height: 1.3;
+}
+
+.listing-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.listing-price {
+  margin-bottom: 1rem;
+}
+
+.listing-price strong {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.price-period {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.listing-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.listing-actions .btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .listings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-filters .row {
+    flex-direction: column;
+  }
+  
+  .search-filters .col-md-1,
+  .search-filters .col-md-2,
+  .search-filters .col-md-3 {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Favorite functionality
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      
+      if (!window.currentUser) {
+        alert('Please log in to save favorites');
+        return;
+      }
+      
+      const listingId = this.dataset.listingId;
+      const icon = this.querySelector('i');
+      
+      try {
+        const response = await fetch(`/listings/${listingId}/favorite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          icon.classList.toggle('far');
+          icon.classList.toggle('fas');
+          this.classList.toggle('active');
+        }
+      } catch (error) {
+        console.error('Error toggling favorite:', error);
+      }
+    });
+  });
+});
+
+// Global user data for JavaScript
+window.currentUser = <%= currentUser ? JSON.stringify({id: currentUser._id}) : 'null' %>;
+</script>

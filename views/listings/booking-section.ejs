@@ -1,0 +1,439 @@
+<!-- MINIMALIST BOOKING SECTION -->
+<% if (currentUser && currentUser._id.toString() !== listing.owner._id.toString()) { %>
+<div class="row mt-5">
+  <div class="col-12">
+    <div class="minimal-booking-card">
+      <div class="booking-header">
+        <h3 class="booking-title">Book this place</h3>
+        <p class="booking-price">₹<%= listing.price.toLocaleString('en-IN') %> <span class="price-unit">per night</span></p>
+        <button class="btn-book" id="showBookingForm">
+          Reserve
+        </button>
+      </div>
+        
+      <!-- Minimal Booking Form -->
+      <div id="bookingForm" class="d-none booking-form">
+        <form action="/bookings/listings/<%= listing._id %>/book" method="POST" id="actualBookingForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Check-in</label>
+              <input type="date" name="checkin" required>
+            </div>
+            <div class="form-group">
+              <label>Check-out</label>
+              <input type="date" name="checkout" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Guests</label>
+              <select name="guests" required>
+                <% for(let i = 1; i <= (listing.maxGuests || 4); i++) { %>
+                  <option value="<%= i %>"><%= i %> guest<%= i > 1 ? 's' : '' %></option>
+                <% } %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" name="phone" placeholder="Your phone" required>
+            </div>
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Message <span class="optional">(optional)</span></label>
+            <textarea name="message" rows="2" placeholder="Any special requests?"></textarea>
+          </div>
+          
+          <!-- Simple Pricing -->
+          <div class="pricing-summary">
+            <div class="price-row">
+              <span>₹<%= listing.price.toLocaleString('en-IN') %> × <span id="nights">0</span> night<span id="nightsPlural">s</span></span>
+              <span id="subtotal">₹0</span>
+            </div>
+            <div class="price-row">
+              <span>Service fee</span>
+              <span id="serviceFee">₹0</span>
+            </div>
+            <div class="price-row">
+              <span>Taxes</span>
+              <span id="taxes">₹0</span>
+            </div>
+            <div class="price-total">
+              <span>Total</span>
+              <span id="total">₹0</span>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="cancelBooking">Cancel</button>
+            <button type="submit" class="btn-confirm" id="submitBooking">Confirm booking</button>
+          </div>
+          
+          <p class="booking-note">Your request will be sent to the host for approval.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% } else if (!currentUser) { %>
+<div class="row mt-5">
+  <div class="col-12">
+    <div class="minimal-booking-card">
+      <div class="login-section">
+        <h3 class="booking-title">Sign in to book</h3>
+        <p class="login-subtitle">Create an account or sign in to reserve this place</p>
+        <a href="/users/login" class="btn-login">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script>
+// Booking functionality - inline to ensure it works
+(function() {
+  const bookNowBtn = document.getElementById('showBookingForm');
+  const bookingForm = document.getElementById('bookingForm');
+  const cancelBtn = document.getElementById('cancelBooking');
+  
+  if (bookNowBtn && bookingForm) {
+    bookNowBtn.onclick = function() {
+      bookNowBtn.style.display = 'none';
+      bookingForm.classList.remove('d-none');
+      bookingForm.scrollIntoView({ behavior: 'smooth' });
+    };
+  }
+  
+  if (cancelBtn && bookingForm && bookNowBtn) {
+    cancelBtn.onclick = function() {
+      bookingForm.classList.add('d-none');
+      bookNowBtn.style.display = 'block';
+    };
+  }
+  
+  // Price calculation and date validation
+  const checkinInput = document.querySelector('input[name="checkin"]');
+  const checkoutInput = document.querySelector('input[name="checkout"]');
+  
+  if (checkinInput && checkoutInput) {
+    const price = <%= listing.price %>;
+    let unavailableDates = [];
+    
+    // Fetch unavailable dates
+    fetch('/bookings/api/listings/<%= listing._id %>/unavailable-dates')
+      .then(response => response.json())
+      .then(data => {
+        unavailableDates = data.unavailableDates || [];
+        if (unavailableDates.length > 0) {
+          showUnavailableDatesWarning();
+          disableUnavailableDates();
+        }
+      })
+      .catch(error => console.log('Could not load unavailable dates'));
+    
+    function showUnavailableDatesWarning() {
+      const warningDiv = document.createElement('div');
+      warningDiv.className = 'alert alert-warning mt-2';
+      warningDiv.innerHTML = `
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Note:</strong> Grayed out dates are already booked and cannot be selected.
+      `;
+      checkinInput.parentNode.appendChild(warningDiv);
+    }
+    
+    function disableUnavailableDates() {
+      // Add event listener to disable unavailable dates
+      const observer = new MutationObserver(function() {
+        unavailableDates.forEach(date => {
+          const dateElements = document.querySelectorAll(`input[type="date"]`);
+          dateElements.forEach(input => {
+            input.addEventListener('input', function() {
+              if (unavailableDates.includes(this.value)) {
+                this.value = '';
+                alert('This date is not available. Please choose another date.');
+              }
+            });
+          });
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+    
+    function isDateUnavailable(dateString) {
+      return unavailableDates.includes(dateString);
+    }
+    
+    function updatePrice() {
+      const checkin = new Date(checkinInput.value);
+      const checkout = new Date(checkoutInput.value);
+      
+      // Validate dates
+      if (checkinInput.value && isDateUnavailable(checkinInput.value)) {
+        alert('Check-in date is not available. Please choose another date.');
+        checkinInput.value = '';
+        return;
+      }
+      
+      if (checkoutInput.value && isDateUnavailable(checkoutInput.value)) {
+        alert('Check-out date is not available. Please choose another date.');
+        checkoutInput.value = '';
+        return;
+      }
+      
+      if (checkin && checkout && checkout > checkin) {
+        const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+        const subtotal = nights * price;
+        const serviceFee = Math.round(subtotal * 0.1);
+        const taxes = Math.round(subtotal * 0.05);
+        const total = subtotal + serviceFee + taxes;
+        
+        document.getElementById('nights').textContent = nights;
+        document.getElementById('nightsPlural').textContent = nights === 1 ? '' : 's';
+        document.getElementById('subtotal').textContent = '₹' + subtotal.toLocaleString('en-IN');
+        document.getElementById('serviceFee').textContent = '₹' + serviceFee.toLocaleString('en-IN');
+        document.getElementById('taxes').textContent = '₹' + taxes.toLocaleString('en-IN');
+        document.getElementById('total').textContent = '₹' + total.toLocaleString('en-IN');
+      }
+    }
+    
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    checkinInput.min = today;
+    checkoutInput.min = today;
+    
+    checkinInput.onchange = function() {
+      checkoutInput.min = this.value;
+      updatePrice();
+    };
+    
+    checkoutInput.onchange = updatePrice;
+  }
+})();
+</script>
+
+<style>
+/* Minimal Booking Styles */
+.minimal-booking-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.booking-header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.booking-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.booking-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.price-unit {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #717171;
+}
+
+.btn-book {
+  background: #222;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-book:hover {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+/* Form Styles */
+.booking-form {
+  padding-top: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.optional {
+  color: #717171;
+  font-weight: 400;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #222;
+}
+
+.form-group textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Pricing */
+.pricing-summary {
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.price-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #222;
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.btn-cancel {
+  background: white;
+  color: #222;
+  border: 1px solid #d0d0d0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.btn-cancel:hover {
+  background: #f5f5f5;
+}
+
+.btn-confirm {
+  background: #222;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 2;
+}
+
+.btn-confirm:hover {
+  background: #000;
+}
+
+.booking-note {
+  font-size: 0.875rem;
+  color: #717171;
+  text-align: center;
+  margin: 16px 0 0 0;
+}
+
+/* Login Section */
+.login-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.login-subtitle {
+  color: #717171;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.btn-login {
+  background: #222;
+  color: white;
+  text-decoration: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.btn-login:hover {
+  background: #000;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+</style>

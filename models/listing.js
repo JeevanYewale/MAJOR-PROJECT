@@ -1,262 +1,161 @@
-const Listing = require("../models/listing.js");
-const User = require("../models/user.js");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-function normalizeImageInput(payloadImage, payloadImageUrl, existingImage) {
-  if (typeof payloadImageUrl === "string" && payloadImageUrl.trim() !== "") {
-    return {
-      filename: (existingImage && existingImage.filename) || "listingimage",
-      url: payloadImageUrl.trim(),
-    };
-  }
-  if (
-    payloadImage &&
-    typeof payloadImage === "object" &&
-    payloadImage.url &&
-    payloadImage.url.trim() !== ""
-  ) {
-    return {
-      filename:
-        payloadImage.filename ||
-        (existingImage && existingImage.filename) ||
-        "listingimage",
-      url: payloadImage.url.trim(),
-    };
-  }
-  if (typeof payloadImage === "string" && payloadImage.trim() !== "") {
-    const s = payloadImage.trim();
-    if (/^https?:\/\//i.test(s)) {
-      return {
-        filename: (existingImage && existingImage.filename) || "listingimage",
-        url: s,
-      };
+const listingSchema = new Schema({
+  title: { type: String, required: true, trim: true },
+  description: { type: String, required: true, trim: true },
+  
+  images: [{
+    url: { type: String, required: true },
+    filename: { type: String, default: "listingimage" }
+  }],
+  
+  image: {
+    url: {
+      type: String,
+      required: [true, "Image URL is required"],
+      default: "https://images.unsplash.com/photo-1625505826533-5e598cdd06d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      set: v => (v === "" ? "https://images.unsplash.com/photo-1625505826533-5e598cdd06d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" : v)
+    },
+    filename: { type: String, default: "listingimage" }
+  },
+  
+  price: { type: Number, required: true, min: 1 },
+  currency: { type: String, default: "USD" },
+  
+  location: { type: String, required: true, trim: true },
+  country: { type: String, required: true, trim: true },
+  address: { type: String, trim: true },
+  coordinates: {
+    lat: Number,
+    lng: Number
+  },
+
+  maxGuests: { type: Number, default: 2, min: 1, max: 20 },
+  bedrooms: { type: Number, default: 1, min: 0, max: 10 },
+  beds: { type: Number, default: 1, min: 1, max: 20 },
+  bathrooms: { type: Number, default: 1, min: 0, max: 10 },
+  
+  propertyType: {
+    type: String,
+    enum: ["apartment", "house", "villa", "cabin", "hotel", "resort", "condo", "townhouse", "loft", "other"],
+    default: "apartment"
+  },
+  
+  category: {
+    type: String,
+    enum: ["beachfront", "trending", "countryside", "amazing-pools", "iconic-cities", "mountains", "castles", "amazing-views", "luxe", "cabins", "apartment", "house", "villa", "cabin", "hotel", "resort", "other"],
+    default: "trending"
+  },
+  
+  amenities: [{
+    type: String,
+    enum: ["wifi", "kitchen", "washer", "dryer", "air-conditioning", "heating", "tv", "pool", "hot-tub", "gym", "parking", "breakfast", "laptop-workspace", "crib", "hair-dryer", "iron", "essentials", "shampoo", "hangers", "bed-linens", "extra-pillows", "fire-extinguisher", "carbon-monoxide-alarm", "smoke-alarm", "first-aid-kit", "Beach access", "Washer", "TV", "WiFi", "Kitchen", "Air conditioning", "Heating", "Pool", "Hot tub", "Gym", "Parking", "Breakfast", "Workspace", "Hair dryer", "Iron", "Essentials", "Shampoo", "Hangers", "Bed linens", "Extra pillows"]
+  }],
+  
+  houseRules: {
+    checkIn: { type: String, default: "3:00 PM" },
+    checkOut: { type: String, default: "11:00 AM" },
+    smokingAllowed: { type: Boolean, default: false },
+    petsAllowed: { type: Boolean, default: false },
+    partiesAllowed: { type: Boolean, default: false },
+    quietHours: { type: String, default: "10:00 PM - 8:00 AM" },
+    additionalRules: [String]
+  },
+  
+  availability: {
+    instantBook: { type: Boolean, default: false },
+    minNights: { type: Number, default: 1, min: 1 },
+    maxNights: { type: Number, default: 365 },
+    advanceNotice: { type: String, enum: ["same-day", "1-day", "2-days", "3-days", "7-days"], default: "same-day" },
+    preparationTime: { type: String, enum: ["none", "1-day", "2-days"], default: "none" }
+  },
+  
+  pricing: {
+    cleaningFee: { type: Number, default: 0 },
+    serviceFee: { type: Number, default: 0 },
+    weeklyDiscount: { type: Number, default: 0, max: 50 },
+    monthlyDiscount: { type: Number, default: 0, max: 50 }
+  },
+
+  owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
+  
+  bookings: [{ type: Schema.Types.ObjectId, ref: "Booking" }],
+  
+  status: {
+    type: String,
+    enum: ["active", "inactive", "pending", "suspended"],
+    default: "active"
+  },
+  
+  featured: { type: Boolean, default: false },
+  verified: { type: Boolean, default: false },
+  
+  viewCount: { type: Number, default: 0 },
+  favoriteCount: { type: Number, default: 0 },
+  
+  createdAt: { type: Date, default: Date.now },
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+listingSchema.pre("save", async function(next) {
+  if (this.isNew && this.owner) {
+    try {
+      const User = mongoose.model("User");
+      const owner = await User.findById(this.owner);
+      if (owner && owner.role === "guest") {
+        await owner.becomeHost();
+        console.log(`User ${owner.username} upgraded to host`);
+      }
+    } catch (e) {
+      console.error("Error upgrading user to host:", e);
     }
-    const urlMatch = s.match(/https?:\/\/[^\s'"]+/i);
-    if (urlMatch) {
-      return {
-        filename: (existingImage && existingImage.filename) || "listingimage",
-        url: urlMatch[0],
-      };
+  }
+  next();
+});
+
+listingSchema.pre("findOneAndDelete", async function(next) {
+  const listingId = this.getQuery()["_id"];
+  console.log(`🗑️ PRE: Preparing to delete listing with ID: ${listingId}`);
+  next();
+});
+
+listingSchema.post("findOneAndDelete", async function(listing) {
+  if (listing?.reviews?.length > 0) {
+    try {
+      const Review = require("./review.js");
+      const deletedReviews = await Review.deleteMany({ _id: { $in: listing.reviews } });
+      console.log(`🗑️ Deleted ${deletedReviews.deletedCount} reviews for listing: ${listing.title}`);
+    } catch (e) {
+      console.error("Error deleting associated reviews:", e);
     }
-    return existingImage;
   }
-  return existingImage;
-}
+  console.log(`✅ Cleanup completed for listing: ${listing._id}`);
+});
 
-function safeParseNumber(value, defaultValue, min = null, max = null) {
-  if (value === undefined || value === null || value === "") return defaultValue;
-  let parsed = typeof value === "string" ? parseFloat(value) : Number(value);
-  if (isNaN(parsed)) return defaultValue;
-  if (min !== null && parsed < min) parsed = min;
-  if (max !== null && parsed > max) parsed = max;
-  return parsed;
-}
-
-function safeParseArray(value, defaultValue = []) {
-  if (!value) return defaultValue;
-  if (Array.isArray(value)) return value.filter(i => i && typeof i === "string");
-  if (typeof value === "string") return [value];
-  return defaultValue;
-}
-
-module.exports.index = async (req, res) => {
-  try {
-    const allListings = await Listing.find({})
-      .populate("owner", "username firstName lastName avatar verified superhost")
-      .sort({ createdAt: -1 });
-    res.render("listings/index.ejs", { allListings });
-  } catch (err) {
-    console.error(err);
-    req.flash("error", "Unable to fetch listings");
-    res.render("listings/index.ejs", { allListings: [] });
-  }
+listingSchema.methods.calculateAverageRating = async function() {
+  if (!this.reviews?.length) return 0;
+  await this.populate("reviews");
+  const total = this.reviews.reduce((sum, r) => sum + r.rating, 0);
+  return (total / this.reviews.length).toFixed(1);
 };
 
-module.exports.renderNewForm = (req, res) => {
-  if (!req.user) {
-    req.flash("error", "You must be signed in to create a listing");
-    return res.redirect("/login");
-  }
-  res.render("listings/new.ejs");
+listingSchema.methods.getReviewCount = function() {
+  return this.reviews ? this.reviews.length : 0;
 };
 
-module.exports.createListing = async (req, res) => {
-  try {
-    if (!req.user) {
-      req.flash("error", "You must be signed in to create a listing");
-      return res.redirect("/login");
-    }
-    const payload = req.body.listing || {};
-    const hostPayload = req.body.host || {};
+listingSchema.virtual("averageRating").get(function() {
+  if (!this.reviews || this.reviews.length === 0) return 0;
+  const total = this.reviews.reduce((sum, r) => sum + r.rating, 0);
+  return (total / this.reviews.length).toFixed(1);
+});
 
-    const listingData = {
-      title: payload.title.trim(),
-      description: payload.description.trim(),
-      price: safeParseNumber(payload.price, 0, 1, 1000000),
-      country: payload.country.trim(),
-      location: payload.location.trim(),
-      maxGuests: safeParseNumber(payload.maxGuests, 2, 1, 20),
-      bedrooms: safeParseNumber(payload.bedrooms, 1, 0, 10),
-      bathrooms: safeParseNumber(payload.bathrooms, 1, 0, 10),
-      category: ['apartment','house','villa','cabin','hotel','resort','other'].includes(payload.category) ? payload.category : 'apartment',
-      amenities: safeParseArray(payload.amenities, []),
-    };
+listingSchema.virtual("reviewCount").get(function() {
+  return this.reviews ? this.reviews.length : 0;
+});
 
-    if (req.file) {
-      listingData.image = {
-        url: req.file.path,
-        filename: req.file.filename,
-      };
-    } else if (payload.image || payload.imageUrl) {
-      listingData.image = normalizeImageInput(payload.image, payload.imageUrl, undefined);
-    }
-
-    const newListing = new Listing(listingData);
-    newListing.owner = req.user._id;
-
-    if (hostPayload) {
-      const user = await User.findById(req.user._id);
-      if (hostPayload.firstName) user.firstName = hostPayload.firstName.trim();
-      if (hostPayload.lastName) user.lastName = hostPayload.lastName.trim();
-      if (hostPayload.bio) user.bio = hostPayload.bio.trim();
-      if (hostPayload.languages) user.languages = safeParseArray(hostPayload.languages);
-      if (hostPayload.responseTime) user.responseTime = hostPayload.responseTime.trim();
-      await user.save();
-    }
-
-    await newListing.save();
-    req.flash("success", "New listing added successfully");
-    res.redirect(`/listings/${newListing._id}`);
-  } catch (err) {
-    console.error(err);
-    req.flash("error", "Error creating listing");
-    res.redirect("/listings/new");
-  }
-};
-
-module.exports.showListing = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const listing = await Listing.findById(id)
-      .populate({
-        path: "owner",
-        select: "username firstName lastName avatar bio languages responseTime verified superhost"
-      })
-      .populate({
-        path: "reviews",
-        populate: {
-          path: "author",
-          select: "username"
-        }
-      });
-
-    if (!listing) {
-      req.flash("error", "Listing not found");
-      return res.redirect("/listings");
-    }
-
-    // Defaults for owner if missing
-    if (!listing.owner.languages || listing.owner.languages.length === 0) {
-      listing.owner.languages = ["English"];
-    }
-    if (!listing.owner.bio) {
-      listing.owner.bio = "Welcome! I love sharing amazing places with fellow travelers.";
-    }
-
-    res.render("listings/show.ejs", { listing });
-  } catch (err) {
-    console.error(err);
-    req.flash("error", "Error loading listing");
-    res.redirect("/listings");
-  }
-};
-
-module.exports.renderEditForm = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const listing = await Listing.findById(id).populate("owner");
-
-    if (!listing) {
-      req.flash("error", "Listing not found");
-      return res.redirect("/listings");
-    }
-    if (!req.user || (!listing.owner._id.equals(req.user._id) && req.user.role !== "admin")) {
-      req.flash("error", "You don't have permission to edit this listing");
-      return res.redirect(`/listings/${id}`);
-    }
-
-    res.render("listings/edit.ejs", { listing });
-  } catch (err) {
-    console.error(err);
-    req.flash("error", "Error loading edit form");
-    res.redirect("/listings");
-  }
-};
-
-module.exports.updateListing = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const payload = req.body.listing || {};
-
-    const listing = await Listing.findById(id).populate("owner");
-    if (!listing) {
-      req.flash("error", "Listing not found");
-      return res.redirect("/listings");
-    }
-    if (!req.user || (!listing.owner._id.equals(req.user._id) && req.user.role !== "admin")) {
-      req.flash("error", "You don't have permission to edit this listing");
-      return res.redirect(`/listings/${id}`);
-    }
-
-    const updated = {
-      title: payload.title.trim(),
-      description: payload.description.trim(),
-      price: safeParseNumber(payload.price, listing.price, 1, 1000000),
-      country: payload.country.trim(),
-      location: payload.location.trim(),
-      maxGuests: safeParseNumber(payload.maxGuests, listing.maxGuests, 1, 20),
-      bedrooms: safeParseNumber(payload.bedrooms, listing.bedrooms, 0, 10),
-      bathrooms: safeParseNumber(payload.bathrooms, listing.bathrooms, 0, 10),
-      category: ['apartment','house','villa','cabin','hotel','resort','other'].includes(payload.category) ? payload.category : listing.category,
-      amenities: safeParseArray(payload.amenities, listing.amenities)
-    };
-
-    if (req.file) {
-      updated.image = {
-        url: req.file.path,
-        filename: req.file.filename
-      };
-    } else {
-      updated.image = normalizeImageInput(payload.image, payload.imageUrl, listing.image);
-    }
-
-    await Listing.findByIdAndUpdate(id, updated, { runValidators: true, new: true });
-    req.flash("success", "Listing updated successfully");
-    res.redirect(`/listings/${id}`);
-  } catch (err) {
-    console.error(err);
-    req.flash("error", "Error updating listing");
-    res.redirect(`/listings/${req.params.id}/edit`);
-  }
-};
-
-module.exports.deleteListing = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const listing = await Listing.findById(id).populate("owner");
-    if (!listing) {
-      req.flash("error", "Listing not found");
-      return res.redirect("/listings");
-    }
-    if (!req.user || (!listing.owner._id.equals(req.user._id) && req.user.role !== "admin")) {
-      req.flash("error", "You don't have permission to delete this listing");
-      return res.redirect(`/listings/${id}`);
-    }
-    await Listing.findByIdAndDelete(id);
-    req.flash("success", "Listing deleted successfully");
-    res.redirect("/listings");
-  } catch (err) {
-    console.error(err);
-    req.flash("error", "Error deleting listing");
-    res.redirect("/listings");
-  }
-};
+module.exports = mongoose.model("Listing", listingSchema);

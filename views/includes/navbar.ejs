@@ -1,99 +1,48 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-  <div class="container-fluid px-4 px-lg-5">
-    <!-- Brand with logo -->
-    <a class="navbar-brand d-flex align-items-center" href="/">
-      <img src="/images/logo.jpg" alt="TravelStay Logo" height="60" width="60" class="d-inline-block align-text-top me-3" style="object-fit: contain;">
-      <span class="fw-bold fs-4 text-primary">TravelStay</span>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <i class="fas fa-plane me-2"></i>TravelStay
     </a>
-    <!-- Mobile toggle button -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <!-- Navbar content -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <!-- Left nav links -->
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/listings">All Listings</a></li>
-        <li class="nav-item"><a class="nav-link" href="/listings/new">Add New Listing</a></li>
-      </ul>
-      <!-- Centered search form -->
-      <form class="d-flex mx-auto my-2 my-lg-0" style="max-width: 400px; width: 100%;">
-        <input class="form-control rounded-pill me-2" type="search" placeholder="Where to?" aria-label="Search" />
-        <button class="btn btn-primary rounded-pill px-4" type="submit">
-          <i class="fas fa-search"></i>
-        </button>
-      </form>
-      <!-- Right user menu -->
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center gap-3">
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/listings">All Listings</a>
+        </li>
         <% if (currentUser) { %>
           <li class="nav-item">
-            <a href="/profile" class="text-decoration-none text-dark d-flex align-items-center">
-              <i class="fas fa-user-circle fs-4 me-1"></i> Profile
-            </a>
+            <a class="nav-link" href="/listings/new">Add Listing</a>
           </li>
-          <li class="nav-item">
-            <a href="/logout" class="nav-link">
-              Logout
+        <% } %>
+      </ul>
+      
+      <ul class="navbar-nav">
+        <% if (currentUser) { %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+              Welcome, <%= currentUser.username %>
             </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/users/profile">Profile</a></li>
+              <li><a class="dropdown-item" href="/users/dashboard">Dashboard</a></li>
+              <li><a class="dropdown-item" href="/bookings">My Bookings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/users/logout">Logout</a></li>
+            </ul>
           </li>
         <% } else { %>
           <li class="nav-item">
-            <a href="/signup" class="nav-link">
-              Sign Up
-            </a>
+            <a class="nav-link" href="/users/login">Login</a>
           </li>
           <li class="nav-item">
-            <a href="/login" class="nav-link">
-              Log In
-            </a>
+            <a class="nav-link" href="/users/signup">Sign Up</a>
           </li>
         <% } %>
       </ul>
     </div>
   </div>
 </nav>
-
-<style>
-  body {
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .navbar-light .navbar-nav .nav-link {
-    color: #555;
-    font-weight: 500;
-    transition: color 0.3s ease;
-  }
-
-  .navbar-light .navbar-nav .nav-link:hover,
-  .navbar-light .navbar-nav .nav-link.active {
-    color: #ff385c;
-  }
-
-  .btn-primary {
-    background-color: #ff385c;
-    border: none;
-  }
-
-  .btn-primary:hover {
-    background-color: #e01e4f;
-  }
-
-  form .form-control {
-    border-radius: 50px !important;
-    padding-left: 20px;
-  }
-
-  form .btn {
-    min-width: 3.5rem;
-  }
-
-  /* Responsive: Center search full width on mobile */
-  @media (max-width: 768px) {
-    form.d-flex.mx-auto {
-      max-width: 100% !important;
-      margin: 15px 0 !important;
-    }
-  }
-</style>
